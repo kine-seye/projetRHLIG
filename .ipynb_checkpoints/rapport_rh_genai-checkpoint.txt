@@ -1,0 +1,50 @@
+======================================================================
+  RAPPORT RH — ANALYSE PREDICTIVE DU TURNOVER
+  Genere automatiquement le 10/05/2026 a 11:43
+======================================================================
+
+1. RESUME EXECUTIF
+----------------------------------------------------------------------
+Analyse realisee sur 1,470 employes.
+Taux d attrition observe : 16.1% (237 departs).
+Modele XGBoost : F1=0.4821 | AUC=0.8031
+
+2. REPARTITION DES NIVEAUX DE RISQUE
+----------------------------------------------------------------------
+  Risque Critique (>=70%) :   200 employes — Action immediate
+  Risque Eleve   (50-70%) :     6 employes — Entretien sous 2 semaines
+  Risque Modere           :    50 employes — Suivi mensuel
+  Risque Faible           : 1,214 employes — Profil stable
+
+3. ANALYSE PAR DEPARTEMENT
+----------------------------------------------------------------------
+  Sales                               : 20.1% (n=446) <- PRIORITE
+  Human Resources                     : 17.5% (n=63)
+  Research & Development              : 12.3% (n=961)
+
+  Dept le plus a risque : Sales (20.1%)
+  Dept le plus stable   : Research & Development (12.3%)
+
+4. FACTEURS DE RISQUE
+----------------------------------------------------------------------
+  Avec heures sup  : 30.5% de departs
+  Sans heures sup  : 10.4% de departs
+  Difference       : +20.1 points
+
+5. RECOMMANDATIONS STRATEGIQUES
+----------------------------------------------------------------------
+  1. Entretiens immediats pour les 200 employes critiques
+  2. Reduire les heures sup dans le dept Sales
+  3. Programme de promotion interne
+  4. Ameliorer l equilibre vie pro/perso
+
+6. PERFORMANCES DU MODELE
+----------------------------------------------------------------------
+  Algorithme      : XGBoost (GridSearchCV)
+  F1-Score        : 0.4821
+  AUC-ROC         : 0.8031
+  Seuil optimal   : 0.10
+
+  Rapport genere par Generative HR Analytics
+  Seye Kine & Bindia Adeline Thiara | M. Aidara | UCAO 2025-2026
+======================================================================
