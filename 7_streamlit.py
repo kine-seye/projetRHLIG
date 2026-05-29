@@ -171,9 +171,9 @@ if data is not None:
         else:
             modele        = data
             preprocesseur = None
-            seuil         = 0.5
-            F1            = 0.8120  # Tu peux écrire tes scores manuellement ici en dur pour ton rapport !
-            AUC           = 0.8940  # Idem pour l'AUC
+            seuil         = 0.1
+            F1            = 0.4821  # Tu peux écrire tes scores manuellement ici en dur pour ton rapport !
+            AUC           = 0.8030  # Idem pour l'AUC
             # On prend par défaut toutes les colonnes sauf la cible
             FEATURES      = [c for c in df_base.columns if c not in ["Attrition", "Probabilite", "Prediction", "Risque_Pct", "Niveau"]]
 
@@ -2353,4 +2353,4 @@ pre{{background:#f8f9fa;padding:20px;border-radius:8px;white-space:pre-wrap;font
         """, unsafe_allow_html=True)
  
 # Footer
-st.markdown(f'<hr style="border-color:{BOC};margin:30px 0 10px;"><div style="text-align:center;color:{T2C};font-size:12px;padding:6px 0;">HR Analytics · Seye Kiné | Bindia Adeline Thiara · <span style="color:{OC};">M. Aidara</span> · UCAO 2025-2026</div>', unsafe_allow_html=True)
+st.markdown(f'<hr style="border-color:{BOC};margin:30px 0 10px;"><div style="text-align:center;color:{T2C};font-size:12px;padding:6px 0;">HR Analytics · Seye Kiné | Bindia Adeline Thiara · <span style="color:{OC};">M. Aidara</span> · UCAO 2025-2026</div>', unsafe_allow_html=True) 

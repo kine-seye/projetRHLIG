@@ -171,9 +171,9 @@ if data is not None:
         else:
             modele        = data
             preprocesseur = None
-            seuil         = 0.5
-            F1            = 0.8120  # Tu peux écrire tes scores manuellement ici en dur pour ton rapport !
-            AUC           = 0.8940  # Idem pour l'AUC
+            seuil         = 0.1
+            F1            = 0.4821  # Tu peux écrire tes scores manuellement ici en dur pour ton rapport !
+            AUC           = 0.8030  # Idem pour l'AUC
             # On prend par défaut toutes les colonnes sauf la cible
             FEATURES      = [c for c in df_base.columns if c not in ["Attrition", "Probabilite", "Prediction", "Risque_Pct", "Niveau"]]
 
