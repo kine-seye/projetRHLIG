@@ -131,8 +131,7 @@ COLS_CAT_DEF = ['BusinessTravel','Department','Education','EducationField',
 @st.cache_resource
 def charger_modele():
     try:
-        # On importe pickle directement à l'intérieur pour sécuriser le Cloud
-        import pickle
+        import pickle  # Sécurité interne 1
         with open("mon_modele_rh.pkl", "rb") as f:
             return pickle.load(f)
     except Exception as e1:
@@ -142,12 +141,13 @@ def charger_modele():
         except Exception as e2:
             st.error(f"Erreur technique de chargement du modèle : {e1} | {e2}")
             return None
+
 @st.cache_data
 def charger_df():
     df = pd.read_csv("hr.csv")
     df["Attrition"] = df["Attrition"].map({"Yes":1,"No":0})
     return df
-import pickle 
+ 
 data    = charger_modele()
 df_base = charger_df()
 n       = len(df_base)
@@ -168,6 +168,7 @@ if data is not None and isinstance(data, dict):
  
         @st.cache_data
         def enrichir():
+            import pickle  # ⭐ Sécurité interne 2 : On le place ICI pour la fonction en cache
             d = df_base.copy()
             X = preprocesseur.transform(d[FEATURES])
             d["Probabilite"] = modele.predict_proba(X)[:,1]
@@ -185,10 +186,6 @@ if data is not None and isinstance(data, dict):
         df = df_base.copy()
 else:
     df = df_base.copy()
- 
-COLS_EDA = [c for c in df.select_dtypes("number").columns
-            if c not in ["Attrition","Probabilite","Prediction","Risque_Pct"]]
- 
 # ── SHAP helper ───────────────────────────────────────────────────────────────
 def get_explainer(model_to_explain, background_data):
     """Explainer SHAP universel (plus fiable que TreeExplainer pour XGB 3.x)"""
@@ -1011,7 +1008,11 @@ elif nav == "Simulation What-If":
     if 'emp_id_transfert' in st.session_state:
         id_initial = int(st.session_state.emp_id_transfert)
     else:
-        id_initial = int(df["Probabilite"].idxmax())
+        # Sécurité anti-crash si les probabilités ne sont pas encore calculées
+        if "Probabilite" in df.columns:
+            id_initial = int(df["Probabilite"].idxmax())
+        else:
+            id_initial = int(df.index[0])
 
     # 2. On affiche le titre de la page
     st.markdown(f'<div class="pg"><div class="pt"> Simulation What-If</div><div class="ps">Testez l\'impact des actions RH sur le risque de départ</div></div>', unsafe_allow_html=True)
@@ -2331,5 +2332,4 @@ pre{{background:#f8f9fa;padding:20px;border-radius:8px;white-space:pre-wrap;font
         """, unsafe_allow_html=True)
  
 # Footer
-st.markdown(f'<hr style="border-color:{BOC};margin:30px 0 10px;"><div style="text-align:center;color:{T2C};font-size:12px;padding:6px 0;">HR Analytics · Seye Kiné | Bindia Adeline Thiara · <span style="color:{OC};">M. Aidara</span> · UCAO 2025-2026</div>', unsafe_allow_html=True) 
- 
+st.markdown(f'<hr style="border-color:{BOC};margin:30px 0 10px;"><div style="text-align:center;color:{T2C};font-size:12px;padding:6px 0;">HR Analytics · Seye Kiné | Bindia Adeline Thiara · <span style="color:{OC};">M. Aidara</span> · UCAO 2025-2026</div>', unsafe_allow_html=True)
