@@ -153,7 +153,7 @@ df_base = charger_df()
 n       = len(df_base)
 taux    = df_base["Attrition"].mean()*100
  
-MODELE_OK = False; seuil = 0.31; F1 = 0; AUC = 0
+MODELE_OK = False; seuil = 0.31; F1 = 0.4821 ; AUC = 0.8030
 FEATURES = []; COLS_FINALES = []; modele = None; preprocesseur = None
 
 if data is not None:
@@ -198,6 +198,7 @@ if data is not None:
     except Exception as e:
         # Si le vrai modèle échoue (version de library, etc.), on lance la simulation
         import numpy as np
+        st.error(f"L'erreur réelle de chargement est : {e}")
         st.sidebar.warning(f"⚠️ Mode Secours activé")
         
         @st.cache_data
@@ -2358,4 +2359,4 @@ pre{{background:#f8f9fa;padding:20px;border-radius:8px;white-space:pre-wrap;font
         """, unsafe_allow_html=True)
  
 # Footer
-st.markdown(f'<hr style="border-color:{BOC};margin:30px 0 10px;"><div style="text-align:center;color:{T2C};font-size:12px;padding:6px 0;">HR Analytics · Seye Kiné | Bindia Adeline Thiara · <span style="color:{OC};">M. Aidara</span> · UCAO 2025-2026</div>', unsafe_allow_html=True)
+st.markdown(f'<hr style="border-color:{BOC};margin:30px 0 10px;"><div style="text-align:center;color:{T2C};font-size:12px;padding:6px 0;">HR Analytics · Seye Kiné | Bindia Adeline Thiara · <span style="color:{OC};">M. Aidara</span> · UCAO 2025-2026</div>', unsafe_allow_html=True) 
