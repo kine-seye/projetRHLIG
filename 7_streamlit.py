@@ -129,15 +129,18 @@ COLS_CAT_DEF = ['BusinessTravel','Department','Education','EducationField',
 @st.cache_resource
 def charger_modele():
     try:
-        import joblib
-        return joblib.load("mon_modele_rh.pkl")
-    except:
+        # On essaie d'abord de charger avec pickle (comme tu faisais au début)
+        with open("mon_modele_rh.pkl", "rb") as f:
+            return pickle.load(f)
+    except Exception as e1:
+        # Si pickle échoue, on essaie avec joblib au cas où
         try:
-            with open("mon_modele_rh.pkl","rb") as f:
-                return pickle.load(f)
-        except:
+            import joblib
+            return joblib.load("mon_modele_rh.pkl")
+        except Exception as e2:
+            # Si les deux échouent, on affiche l'erreur sur Streamlit
+            st.error(f"Erreur technique de chargement du modèle : {e1} | {e2}")
             return None
- 
 @st.cache_data
 def charger_df():
     df = pd.read_csv("hr.csv")
