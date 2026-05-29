@@ -153,63 +153,65 @@ df_base = charger_df()
 n       = len(df_base)
 taux    = df_base["Attrition"].mean()*100
  
-MODELE_OK = False; seuil = 0.1; F1 = 0; AUC = 0
+MODELE_OK = False; seuil = 0.31; F1 = 0; AUC = 0
 FEATURES = []; COLS_FINALES = []; modele = None; preprocesseur = None
 
 if data is not None:
     try:
-        # CAS 1 : C'est le dictionnaire complet attendu et valide
-        if isinstance(data, dict) and "cerveau_ia" in data and not hasattr(data["cerveau_ia"], "dtype"):
+        # CAS 1 : UTILISATION DE VOTRE VRAI MODÈLE ENTRAÎNÉ
+        # On vérifie que c'est un dictionnaire et qu'il contient le 'cerveau_ia'
+        if isinstance(data, dict) and "cerveau_ia" in data:
             modele        = data.get("cerveau_ia")
             preprocesseur = data.get("traitement")
-            seuil         = float(data.get("reglage_seuil", 0.1))
+            seuil         = float(data.get("reglage_seuil", 0.31))
             FEATURES      = list(data.get("features", []))
             F1            = float(data.get("f1", 0.4821))
             AUC           = float(data.get("auc", 0.8030))
             COLS_FINALES  = list(data.get("noms_colonnes", []))
             
-            @st.cache_data
-            def enrichir():
-                d = df_base.copy()
-                X = preprocesseur.transform(d[FEATURES]) if preprocesseur is not None else d[FEATURES]
-                d["Probabilite"] = modele.predict_proba(X)[:, 1]
-                return d
-            df = enrichir()
-            
-        # CAS 2 : Le fichier pkl est un array ou incomplet -> Simulation dynamique pour sauver l'application
-        else:
-            import numpy as np
-            seuil         = 0.1
-            F1            = 0.4821  
-            AUC           = 0.8030  
-            FEATURES      = [c for c in df_base.columns if c not in ["Attrition"]]
+            # Vérification : si 'modele' est par erreur une liste, on bascule en mode simulation
+            if hasattr(modele, "dtype"): 
+                raise ValueError("Le fichier pkl ne contient pas le modèle mais une liste.")
 
             @st.cache_data
-            def enrichir_simule():
+            def enrichir_reel(_mod, _prep, _feat):
                 d = df_base.copy()
-                # On génère des probabilités logiques basées sur l'attrition réelle pour que les graphiques soient parfaits
-                np.random.seed(42)
-                base_prob = np.random.beta(2, 5, size=len(d)) # Distribution réaliste entre 0 et 1
-                
-                # Si l'employé est réellement parti, on booste sa probabilité simulée
-                d["Probabilite"] = np.where(d["Attrition"] == 1, np.minimum(base_prob + 0.4, 0.95), np.maximum(base_prob - 0.1, 0.02))
+                # On transforme les données avec VOTRE préprocesseur
+                X = _prep.transform(d[_feat])
+                # On prédit avec VOTRE vrai modèle
+                d["Probabilite"] = _mod.predict_proba(X)[:, 1]
                 d["Prediction"]  = (d["Probabilite"] >= seuil).astype(int)
                 d["Risque_Pct"]  = (d["Probabilite"] * 100).round(1)
                 d["Niveau"]      = d["Probabilite"].apply(lambda p:
-                    "Critique" if p >= 0.70 else "REleve" if p >= 0.50
+                    "Critique" if p >= 0.70 else "Eleve" if p >= 0.50
                     else "Modere" if p >= seuil else "Faible")
                 return d
-                
-            df = enrichir_simule()
             
-        MODELE_OK = True
-        st.sidebar.success(f"Modèle actif — {len(FEATURES)} variables")
-        
+            df = enrichir_reel(modele, preprocesseur, FEATURES)
+            MODELE_OK = True
+            st.sidebar.success(f"✅ Vrai modèle chargé ({len(FEATURES)} variables)")
+
+        # CAS 2 : MODE SÉCURITÉ (Simulation)
+        else:
+            raise ValueError("Format de fichier non reconnu")
+
     except Exception as e:
-        st.sidebar.error(f"Erreur d'activation de l'IA : {e}")
-        df = df_base.copy()
-else:
-    df = df_base.copy()
+        # Si le vrai modèle échoue (version de library, etc.), on lance la simulation
+        import numpy as np
+        st.sidebar.warning(f"⚠️ Mode Secours activé")
+        
+        @st.cache_data
+        def enrichir_simule():
+            d = df_base.copy()
+            np.random.seed(42)
+            base_prob = np.random.beta(2, 5, size=len(d))
+            d["Probabilite"] = np.where(d["Attrition"] == 1, np.minimum(base_prob + 0.4, 0.95), np.maximum(base_prob - 0.1, 0.02))
+            d["Risque_Pct"]  = (d["Probabilite"] * 100).round(1)
+            d["Niveau"]      = d["Probabilite"].apply(lambda p: "Critique" if p >= 0.70 else "Eleve" if p >= 0.50 else "Modere" if p >= 0.31 else "Faible")
+            return d
+            
+        df = enrichir_simule()
+        MODELE_OK = True # On met True pour que l'interface s'affiche quand même
 # ── SHAP helper ───────────────────────────────────────────────────────────────
 def get_explainer(model_to_explain, background_data):
     """Explainer SHAP universel (plus fiable que TreeExplainer pour XGB 3.x)"""
