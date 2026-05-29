@@ -2332,3 +2332,4 @@ pre{{background:#f8f9fa;padding:20px;border-radius:8px;white-space:pre-wrap;font
  
 # Footer
 st.markdown(f'<hr style="border-color:{BOC};margin:30px 0 10px;"><div style="text-align:center;color:{T2C};font-size:12px;padding:6px 0;">HR Analytics · Seye Kiné | Bindia Adeline Thiara · <span style="color:{OC};">M. Aidara</span> · UCAO 2025-2026</div>', unsafe_allow_html=True) 
+ 
