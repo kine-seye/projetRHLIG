@@ -224,7 +224,7 @@ with st.sidebar:
     except ValueError:
         index_page = 0
 
-    nav = st.radio("", PAGES, index=index_page, label_visibility="collapsed")
+    nav = st.radio("Navigation", PAGES, index=index_page, label_visibility="collapsed")
     
     # On met à jour la page actuelle dans la mémoire
     st.session_state.page_actuelle = nav
@@ -2327,4 +2327,4 @@ pre{{background:#f8f9fa;padding:20px;border-radius:8px;white-space:pre-wrap;font
         """, unsafe_allow_html=True)
  
 # Footer
-st.markdown(f'<hr style="border-color:{BOC};margin:30px 0 10px;"><div style="text-align:center;color:{T2C};font-size:12px;padding:6px 0;">HR Analytics · Seye Kiné | Bindia Adeline Thiara · <span style="color:{OC};">M. Aidara</span> · UCAO 2025-2026</div>', unsafe_allow_html=True)
+st.markdown(f'<hr style="border-color:{BOC};margin:30px 0 10px;"><div style="text-align:center;color:{T2C};font-size:12px;padding:6px 0;">HR Analytics · Seye Kiné | Bindia Adeline Thiara · <span style="color:{OC};">M. Aidara</span> · UCAO 2025-2026</div>', unsafe_allow_html=True) 
