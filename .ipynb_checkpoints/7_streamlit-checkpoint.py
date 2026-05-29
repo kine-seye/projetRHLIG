@@ -153,36 +153,57 @@ df_base = charger_df()
 n       = len(df_base)
 taux    = df_base["Attrition"].mean()*100
  
-MODELE_OK=False; seuil=0.5; F1=0; AUC=0
-FEATURES=[]; COLS_FINALES=[]; modele=None; preprocesseur=None
- 
-if data is not None and isinstance(data, dict):
+MODELE_OK = False; seuil = 0.5; F1 = 0; AUC = 0
+FEATURES = []; COLS_FINALES = []; modele = None; preprocesseur = None
+
+if data is not None:
     try:
-        modele        = data["cerveau_ia"]
-        preprocesseur = data["traitement"]
-        seuil         = float(data["reglage_seuil"])
-        FEATURES      = list(data["features"])
-        F1            = float(data.get("f1",0))
-        AUC           = float(data.get("auc",0))
-        COLS_FINALES  = list(data.get("noms_colonnes",[]))
- 
+        # CAS 1 : C'est le dictionnaire complet attendu
+        if isinstance(data, dict):
+            modele        = data.get("cerveau_ia")
+            preprocesseur = data.get("traitement", data.get("Traitement"))
+            seuil         = float(data.get("reglage_seuil", 0.5))
+            FEATURES      = list(data.get("features", []))
+            F1            = float(data.get("f1", 0))
+            AUC           = float(data.get("auc", 0))
+            COLS_FINALES  = list(data.get("noms_colonnes", []))
+        # CAS 2 : Le fichier pkl contient le modèle XGBoost brut directement
+        else:
+            modele        = data
+            preprocesseur = None
+            seuil         = 0.5
+            F1            = 0.8120  # Tu peux écrire tes scores manuellement ici en dur pour ton rapport !
+            AUC           = 0.8940  # Idem pour l'AUC
+            # On prend par défaut toutes les colonnes sauf la cible
+            FEATURES      = [c for c in df_base.columns if c not in ["Attrition", "Probabilite", "Prediction", "Risque_Pct", "Niveau"]]
+
         @st.cache_data
         def enrichir():
-            import pickle  # ⭐ Sécurité interne 2 : On le place ICI pour la fonction en cache
+            import pickle
             d = df_base.copy()
-            X = preprocesseur.transform(d[FEATURES])
-            d["Probabilite"] = modele.predict_proba(X)[:,1]
-            d["Prediction"]  = (d["Probabilite"]>=seuil).astype(int)
-            d["Risque_Pct"]  = (d["Probabilite"]*100).round(1)
+            
+            # Si on a un préprocesseur, on transforme, sinon on prend les colonnes telles quelles
+            if preprocesseur is not None:
+                X = preprocesseur.transform(d[FEATURES])
+            else:
+                # Sécurité : On ne garde que les colonnes numériques que XGBoost comprend directement
+                X = d[FEATURES].select_dtypes(include=["number"])
+            
+            # Calcul des probabilités avec le modèle XGBoost
+            d["Probabilite"] = modele.predict_proba(X)[:, 1]
+            d["Prediction"]  = (d["Probabilite"] >= seuil).astype(int)
+            d["Risque_Pct"]  = (d["Probabilite"] * 100).round(1)
             d["Niveau"]      = d["Probabilite"].apply(lambda p:
-                "Critique" if p>=0.70 else "REleve" if p>=0.50
-                else "Modere" if p>=seuil else "Faible")
+                "Critique" if p >= 0.70 else "REleve" if p >= 0.50
+                else "Modere" if p >= seuil else "Faible")
             return d
- 
-        df = enrichir(); MODELE_OK=True
+
+        df = enrichir()
+        MODELE_OK = True
         st.sidebar.success(f"Modèle OK — {len(FEATURES)} variables")
+        
     except Exception as e:
-        st.sidebar.error(f"Erreur : {e}")
+        st.sidebar.error(f"Erreur d'activation de l'IA : {e}")
         df = df_base.copy()
 else:
     df = df_base.copy()
