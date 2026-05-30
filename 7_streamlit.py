@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import pickle, json, warnings
 import plotly.graph_objects as go
+from xgboost import XGBClassifier
 from plotly.subplots import make_subplots
 import xgboost as xgb
 from xgboost import XGBClassifier
