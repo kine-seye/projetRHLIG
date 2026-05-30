@@ -159,8 +159,6 @@ FEATURES = []; COLS_FINALES = []; modele = None; preprocesseur = None
 
 if data is not None:
     try:
-        # CAS 1 : UTILISATION DE VOTRE VRAI MODÈLE ENTRAÎNÉ
-        # On vérifie que c'est un dictionnaire et qu'il contient le 'cerveau_ia'
         if isinstance(data, dict) and "cerveau_ia" in data:
             modele        = data.get("cerveau_ia")
             preprocesseur = data.get("traitement")
@@ -170,16 +168,13 @@ if data is not None:
             AUC           = float(data.get("auc", 0.8030))
             COLS_FINALES  = list(data.get("noms_colonnes", []))
             
-            # Vérification : si 'modele' est par erreur une liste, on bascule en mode simulation
-           # if hasattr(modele, "dtype"): 
-               # raise ValueError("Le fichier pkl ne contient pas le modèle mais une liste.")
-
+            if modele is None:
+                raise ValueError("Le modèle extrait est vide ou introuvable.")
+            
             @st.cache_data
             def enrichir_reel(_mod, _prep, _feat):
                 d = df_base.copy()
-                # On transforme les données avec VOTRE préprocesseur
                 X = _prep.transform(d[_feat])
-                # On prédit avec VOTRE vrai modèle
                 d["Probabilite"] = _mod.predict_proba(X)[:, 1]
                 d["Prediction"]  = (d["Probabilite"] >= seuil).astype(int)
                 d["Risque_Pct"]  = (d["Probabilite"] * 100).round(1)
@@ -191,17 +186,12 @@ if data is not None:
             df = enrichir_reel(modele, preprocesseur, FEATURES)
             MODELE_OK = True
             st.sidebar.success(f"✅ Vrai modèle chargé ({len(FEATURES)} variables)")
-
-        # CAS 2 : MODE SÉCURITÉ (Simulation)
         else:
             raise ValueError("Format de fichier non reconnu")
 
     except Exception as e:
-        # --- MODE SECOURS AVEC REFUGE DES ERREURS POUR DIAGNOSTIC ---
         import numpy as np
         st.sidebar.warning(f"⚠️ Mode Secours activé")
-        
-        # CETTE LIGNE VA T'AFFICHER L'ERREUR REELLE EN PETIT DANS LA BARRE LATERALE
         st.sidebar.error(f"Détail technique : {str(e)}")
         
         @st.cache_data
