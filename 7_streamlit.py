@@ -439,7 +439,7 @@ elif nav == "Exploration":
             height=400, margin=dict(t=55,b=60,l=130,r=40))
         st.plotly_chart(fig_wm, use_container_width=True)
 
-    
+ 
  
     with t3:
         corr = df[COLS_EDA+["Attrition"]].corr()["Attrition"].drop("Attrition")
