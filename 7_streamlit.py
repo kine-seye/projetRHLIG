@@ -363,6 +363,8 @@ if nav == "Accueil":
 # =============================================================================
 elif nav == "Exploration":
     st.markdown(f'<div class="pg"><div class="pt"> Exploration des Données</div><div class="ps">{n:,} employés × 31 variables</div></div>', unsafe_allow_html=True)
+    # Crée automatiquement la liste de toutes les colonnes numériques disponibles, sans la cible
+    cols_valides_num = [c for c in df.select_dtypes(include=["number"]).columns if c not in ["Attrition", "Probabilite", "Prediction", "Risque_Pct"]]
  
     t1,t2,t3,t4,t5 = st.tabs(["Par variable","Croisements","Corrélations","Salaires","Statistiques"])
  
@@ -442,9 +444,8 @@ elif nav == "Exploration":
  
  
     with t3:
-        exclure = ["Attrition", "Probabilite", "Prediction", "Risque_Pct"]
-        cols_valides_num = [c for c in df.select_dtypes(include=["number"]).columns if c not in exclure]
-        corr = df[COLS_EDA+["Attrition"]].corr()["Attrition"].drop("Attrition")
+        
+        corr = df[cols_valides_num+["Attrition"]].corr()["Attrition"].drop("Attrition")
         ca   = corr.abs().sort_values(ascending=True)
         noms_vars_fr = [traduire_nom(i) for i in ca.index]
         
