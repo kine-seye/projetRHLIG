@@ -171,8 +171,8 @@ if data is not None:
             COLS_FINALES  = list(data.get("noms_colonnes", []))
             
             # Vérification : si 'modele' est par erreur une liste, on bascule en mode simulation
-            if hasattr(modele, "dtype"): 
-                raise ValueError("Le fichier pkl ne contient pas le modèle mais une liste.")
+           # if hasattr(modele, "dtype"): 
+               # raise ValueError("Le fichier pkl ne contient pas le modèle mais une liste.")
 
             @st.cache_data
             def enrichir_reel(_mod, _prep, _feat):
