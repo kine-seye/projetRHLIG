@@ -196,10 +196,12 @@ if data is not None:
             raise ValueError("Format de fichier non reconnu")
 
     except Exception as e:
-        # Si le vrai modèle échoue (version de library, etc.), on lance la simulation
+        # --- MODE SECOURS AVEC REFUGE DES ERREURS POUR DIAGNOSTIC ---
         import numpy as np
-        st.error(f"L'erreur réelle de chargement est : {e}")
         st.sidebar.warning(f"⚠️ Mode Secours activé")
+        
+        # CETTE LIGNE VA T'AFFICHER L'ERREUR REELLE EN PETIT DANS LA BARRE LATERALE
+        st.sidebar.error(f"Détail technique : {str(e)}")
         
         @st.cache_data
         def enrichir_simule():
@@ -210,9 +212,9 @@ if data is not None:
             d["Risque_Pct"]  = (d["Probabilite"] * 100).round(1)
             d["Niveau"]      = d["Probabilite"].apply(lambda p: "Critique" if p >= 0.70 else "Eleve" if p >= 0.50 else "Modere" if p >= 0.31 else "Faible")
             return d
-            
+        
         df = enrichir_simule()
-        MODELE_OK = True # On met True pour que l'interface s'affiche quand même
+        MODELE_OK = True
 # ── SHAP helper ───────────────────────────────────────────────────────────────
 def get_explainer(model_to_explain, background_data):
     """Explainer SHAP universel (plus fiable que TreeExplainer pour XGB 3.x)"""

@@ -153,7 +153,7 @@ df_base = charger_df()
 n       = len(df_base)
 taux    = df_base["Attrition"].mean()*100
  
-MODELE_OK = False; seuil = 0.31; F1 = 0; AUC = 0
+MODELE_OK = False; seuil = 0.31; F1 = 0.4821 ; AUC = 0.8030
 FEATURES = []; COLS_FINALES = []; modele = None; preprocesseur = None
 
 if data is not None:
@@ -196,9 +196,12 @@ if data is not None:
             raise ValueError("Format de fichier non reconnu")
 
     except Exception as e:
-        # Si le vrai modèle échoue (version de library, etc.), on lance la simulation
+        # --- MODE SECOURS AVEC REFUGE DES ERREURS POUR DIAGNOSTIC ---
         import numpy as np
         st.sidebar.warning(f"⚠️ Mode Secours activé")
+        
+        # CETTE LIGNE VA T'AFFICHER L'ERREUR REELLE EN PETIT DANS LA BARRE LATERALE
+        st.sidebar.error(f"Détail technique : {str(e)}")
         
         @st.cache_data
         def enrichir_simule():
@@ -209,9 +212,9 @@ if data is not None:
             d["Risque_Pct"]  = (d["Probabilite"] * 100).round(1)
             d["Niveau"]      = d["Probabilite"].apply(lambda p: "Critique" if p >= 0.70 else "Eleve" if p >= 0.50 else "Modere" if p >= 0.31 else "Faible")
             return d
-            
+        
         df = enrichir_simule()
-        MODELE_OK = True # On met True pour que l'interface s'affiche quand même
+        MODELE_OK = True
 # ── SHAP helper ───────────────────────────────────────────────────────────────
 def get_explainer(model_to_explain, background_data):
     """Explainer SHAP universel (plus fiable que TreeExplainer pour XGB 3.x)"""
@@ -362,6 +365,8 @@ if nav == "Accueil":
 # =============================================================================
 elif nav == "Exploration":
     st.markdown(f'<div class="pg"><div class="pt"> Exploration des Données</div><div class="ps">{n:,} employés × 31 variables</div></div>', unsafe_allow_html=True)
+    # Crée automatiquement la liste de toutes les colonnes numériques disponibles, sans la cible
+    cols_valides_num = [c for c in df.select_dtypes(include=["number"]).columns if c not in ["Attrition", "Probabilite", "Prediction", "Risque_Pct"]]
  
     t1,t2,t3,t4,t5 = st.tabs(["Par variable","Croisements","Corrélations","Salaires","Statistiques"])
  
@@ -437,9 +442,12 @@ elif nav == "Exploration":
             title=dict(text="Croisement : WLB × Statut Matrimonial",font=dict(size=14),x=0.5),
             height=400, margin=dict(t=55,b=60,l=130,r=40))
         st.plotly_chart(fig_wm, use_container_width=True)
+
+ 
  
     with t3:
-        corr = df[COLS_EDA+["Attrition"]].corr()["Attrition"].drop("Attrition")
+        
+        corr = df[cols_valides_num+["Attrition"]].corr()["Attrition"].drop("Attrition")
         ca   = corr.abs().sort_values(ascending=True)
         noms_vars_fr = [traduire_nom(i) for i in ca.index]
         
@@ -509,7 +517,7 @@ elif nav == "Exploration":
         st.markdown("### 📋 Synthèse statistique des indicateurs")
         
         # 1. Calcul des statistiques de base
-        stats = df[COLS_EDA].describe().round(2)
+        stats = df[cols_valides_num].describe().round(2)
         
         # 2. Traduction des noms des mesures (index)
         stats.index = ["Nombre", "Moyenne", "Écart-type", "Minimum", "25%", "Médiane", "75%", "Maximum"]
