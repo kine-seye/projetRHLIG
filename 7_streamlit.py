@@ -131,17 +131,13 @@ COLS_CAT_DEF = ['BusinessTravel','Department','Education','EducationField',
 # ── CHARGEMENT ────────────────────────────────────────────────────────────────
 @st.cache_resource
 def charger_modele():
+    import joblib
     try:
-        import pickle  # Sécurité interne 1
-        with open("mon_modele_rh.pkl", "rb") as f:
-            return pickle.load(f)
-    except Exception as e1:
-        try:
-            import joblib
-            return joblib.load("mon_modele_rh.pkl")
-        except Exception as e2:
-            st.error(f"Erreur technique de chargement du modèle : {e1} | {e2}")
-            return None
+        # On utilise DIRECTEMENT joblib puisque le fichier a été généré avec joblib.dump
+        return joblib.load("mon_modele_rh.pkl")
+    except Exception as e:
+        st.sidebar.error(f"❌ Erreur critique de lecture Joblib : {str(e)}")
+        return None
 
 @st.cache_data
 def charger_df():
@@ -156,7 +152,6 @@ taux    = df_base["Attrition"].mean()*100
  
 MODELE_OK = False; seuil = 0.31; F1 = 0.4821 ; AUC = 0.8030
 FEATURES = []; COLS_FINALES = []; modele = None; preprocesseur = None
-
 if data is not None:
     try:
         if isinstance(data, dict) and "cerveau_ia" in data:
