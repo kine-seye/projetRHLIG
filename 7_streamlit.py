@@ -152,6 +152,7 @@ taux    = df_base["Attrition"].mean()*100
  
 MODELE_OK = False; seuil = 0.31; F1 = 0.4821 ; AUC = 0.8030
 FEATURES = []; COLS_FINALES = []; modele = None; preprocesseur = None
+
 if data is not None:
     try:
         if isinstance(data, dict) and "cerveau_ia" in data:
@@ -185,22 +186,21 @@ if data is not None:
             raise ValueError("Format de fichier non reconnu")
 
     except Exception as e:
-        import numpy as np
         st.sidebar.warning(f"⚠️ Mode Secours activé")
         st.sidebar.error(f"Détail technique : {str(e)}")
-        
-        @st.cache_data
-        def enrichir_simule():
-            d = df_base.copy()
-            np.random.seed(42)
-            base_prob = np.random.beta(2, 5, size=len(d))
-            d["Probabilite"] = np.where(d["Attrition"] == 1, np.minimum(base_prob + 0.4, 0.95), np.maximum(base_prob - 0.1, 0.02))
-            d["Risque_Pct"]  = (d["Probabilite"] * 100).round(1)
-            d["Niveau"]      = d["Probabilite"].apply(lambda p: "Critique" if p >= 0.70 else "Eleve" if p >= 0.50 else "Modere" if p >= 0.31 else "Faible")
-            return d
-        
-        df = enrichir_simule()
-        MODELE_OK = True
+        MODELE_OK = False  # Sécurité : pas de faux pavé XGBoost si le modèle est en panne
+
+# ── INITIALISATION SÉCURISÉE GLOBALE DE DF (Unique et centralisée pour le plan B) ──
+if 'df' not in globals() or df is None:
+    import numpy as np
+    df = df_base.copy()
+    np.random.seed(42)
+    base_prob = np.random.beta(2, 5, size=len(df))
+    df["Probabilite"] = np.where(df["Attrition"] == 1, np.minimum(base_prob + 0.4, 0.95), np.maximum(base_prob - 0.1, 0.02))
+    df["Prediction"]  = (df["Probabilite"] >= seuil).astype(int)
+    df["Risque_Pct"]  = (df["Probabilite"] * 100).round(1)
+    df["Niveau"]      = df["Probabilite"].apply(lambda p: "Critique" if p >= 0.70 else "Eleve" if p >= 0.50 else "Modere" if p >= seuil else "Faible")
+
 # ── SHAP helper ───────────────────────────────────────────────────────────────
 def get_explainer(model_to_explain, background_data):
     """Explainer SHAP universel (plus fiable que TreeExplainer pour XGB 3.x)"""
@@ -282,8 +282,9 @@ if nav == "Accueil":
             st.markdown(f'<div class="kc" style="--c:{c};margin-bottom:14px;"><div class="kv">{val}</div><div class="kl">{lbl}</div></div>', unsafe_allow_html=True)
  
     st.markdown("<br>", unsafe_allow_html=True)
+
  
-    # Graphique 1 — Donut
+    # Graphique 1 — Donut (S'exécutera à coup sûr maintenant !)
     n0 = int((df["Attrition"]==0).sum())
     n1 = int((df["Attrition"]==1).sum())
     fig = go.Figure(go.Pie(
