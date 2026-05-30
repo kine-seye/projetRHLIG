@@ -515,7 +515,7 @@ elif nav == "Exploration":
         st.markdown("### 📋 Synthèse statistique des indicateurs")
         
         # 1. Calcul des statistiques de base
-        stats = df[COLS_EDA].describe().round(2)
+        stats = df[cols_valides_num].describe().round(2)
         
         # 2. Traduction des noms des mesures (index)
         stats.index = ["Nombre", "Moyenne", "Écart-type", "Minimum", "25%", "Médiane", "75%", "Maximum"]
