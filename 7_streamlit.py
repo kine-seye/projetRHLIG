@@ -438,6 +438,8 @@ elif nav == "Exploration":
             title=dict(text="Croisement : WLB × Statut Matrimonial",font=dict(size=14),x=0.5),
             height=400, margin=dict(t=55,b=60,l=130,r=40))
         st.plotly_chart(fig_wm, use_container_width=True)
+
+    
  
     with t3:
         corr = df[COLS_EDA+["Attrition"]].corr()["Attrition"].drop("Attrition")
@@ -2359,4 +2361,4 @@ pre{{background:#f8f9fa;padding:20px;border-radius:8px;white-space:pre-wrap;font
         """, unsafe_allow_html=True)
  
 # Footer
-st.markdown(f'<hr style="border-color:{BOC};margin:30px 0 10px;"><div style="text-align:center;color:{T2C};font-size:12px;padding:6px 0;">HR Analytics · Seye Kiné | Bindia Adeline Thiara · <span style="color:{OC};">M. Aidara</span> · UCAO 2025-2026</div>', unsafe_allow_html=True) 
+st.markdown(f'<hr style="border-color:{BOC};margin:30px 0 10px;"><div style="text-align:center;color:{T2C};font-size:12px;padding:6px 0;">HR Analytics · Seye Kiné | Bindia Adeline Thiara · <span style="color:{OC};">M. Aidara</span> · UCAO 2025-2026</div>', unsafe_allow_html=True)
