@@ -442,6 +442,8 @@ elif nav == "Exploration":
  
  
     with t3:
+        exclure = ["Attrition", "Probabilite", "Prediction", "Risque_Pct"]
+        cols_valides_num = [c for c in df.select_dtypes(include=["number"]).columns if c not in exclure]
         corr = df[COLS_EDA+["Attrition"]].corr()["Attrition"].drop("Attrition")
         ca   = corr.abs().sort_values(ascending=True)
         noms_vars_fr = [traduire_nom(i) for i in ca.index]
