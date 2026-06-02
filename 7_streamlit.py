@@ -1477,17 +1477,19 @@ En français, style corporate."""
         with st.spinner("  Génération en cours par l'IA ..."):
             try:
 
-               # Tentative d'importation avec installation forcée en cas d'échec
+               # Tentative d'importation avec installation forcée en mode utilisateur (--user)
                 try:
                     import google.generativeai as genai
                 except ImportError:
                     import subprocess
                     import sys
-                    subprocess.check_call([sys.executable, "-m", "pip", "install", "google-generativeai"])
-                    # On force Python à actualiser son cache de modules installés
-                    import site
-                    from importlib import reload
-                    reload(site)
+                    # L'argument '--user' règle définitivement le problème de Permission Denied
+                    subprocess.check_call([sys.executable, "-m", "pip", "install", "--user", "google-generativeai"])
+                    import os
+                    # On force Python à ajouter le dossier utilisateur au chemin de recherche
+                    user_site = subprocess.check_output([sys.executable, "-m", "site", "--user-site"]).decode('utf-8').strip()
+                    if user_site not in sys.path:
+                        sys.path.append(user_site)
                     import google.generativeai as genai
                 
                 # Vérification de la clé dans les secrets
