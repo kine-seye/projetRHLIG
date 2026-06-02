@@ -1474,7 +1474,7 @@ En français, style corporate."""
         prompt_final = prompts.get(type_doc, prompts[" Lettre au manager"])
  
         # ── Appel sécurisé à l'API Google Gemini ──────────────────────────────
-        with st.spinner(" 🪄 Génération en cours par l'IA (Gemini)..."):
+        with st.spinner("  Génération en cours par l'IA ..."):
             try:
                 # Importation dynamique et locale pour éviter les blocages au démarrage
                 import google.generativeai as genai
@@ -1488,7 +1488,7 @@ En français, style corporate."""
                     response = model.generate_content(prompt_final)
                     
                     texte_genere = response.text
-                    source = " ✨ Généré en direct par l'IA (Google Gemini)"
+                    source = " Généré en direct par l'IA "
                 else:
                     raise Exception("Clé API GEMINI_API_KEY manquante dans les Secrets Streamlit")
                     
@@ -1503,7 +1503,7 @@ Avec {int(emp_g["YearsAtCompany"])} ans d'ancienneté et un salaire de {int(emp_
 cet employé présente un risque de départ de {proba_g:.0f}% ({niv_g}).
  
 FACTEURS DE RISQUE PRINCIPAUX :
-{chr(10).join([f"   • {f}" for f in facteurs_risque]) if facteurs_risk else "   • Aucun facteur critique détecté"}
+{chr(10).join([f"   • {f}" for f in facteurs_risque]) if facteurs_risque else "   • Aucun facteur critique détecté"}
  
 FACTEURS PROTECTEURS :
 {chr(10).join([f"   • {f}" for f in facteurs_protection]) if facteurs_protection else "   • Données protectrices insuffisantes"}
