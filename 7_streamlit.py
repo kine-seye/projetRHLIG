@@ -14,12 +14,7 @@ import xgboost as xgb
 from xgboost import XGBClassifier
 
 
-try:
-    import google.generativeai as genai
-except ImportError:
-    import os
-    os.system('pip install google-generativeai')
-    import google.generativeai as genai
+
 
 
 # Au tout début, après les imports, initialisez la page si elle n'existe pas
