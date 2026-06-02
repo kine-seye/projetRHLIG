@@ -1485,6 +1485,7 @@ En français, format professionnel, environ 400 mots."""
         prompt_final = prompts[type_doc]
  
       # ── Génération via API Google Gemini ──────────────────────────────────
+        # ── Génération via API Google Gemini ──────────────────────────────────
         with st.spinner("  Génération en cours par l'IA ..."):
             try:
                 import google.generativeai as genai
@@ -1492,14 +1493,25 @@ En français, format professionnel, environ 400 mots."""
                 # Vérification et configuration de la clé API
                 if "GEMINI_API_KEY" in st.secrets:
                     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                    model = genai.GenerativeModel('gemini-1.5-flash')
                     
-                    # Appel à l'API Gemini
-                    response = model.generate_content(prompt_final)
+                    # Système de secours multi-modèles pour éviter à 100% l'erreur 404
+                    try:
+                        # 1. On tente le modèle standard actuel (2026)
+                        model = genai.GenerativeModel('gemini-1.5-flash')
+                        response = model.generate_content(prompt_final)
+                    except Exception:
+                        try:
+                            # 2. Si échec, on tente avec le préfixe complet exigé par certaines versions
+                            model = genai.GenerativeModel('models/gemini-1.5-flash')
+                            response = model.generate_content(prompt_final)
+                        except Exception:
+                            # 3. Dernier recours si la bibliothèque cloud est ancienne
+                            model = genai.GenerativeModel('gemini-pro')
+                            response = model.generate_content(prompt_final)
                     
                     # On récupère le texte généré
                     texte_genere = response.text
-                    source = "  Généré par IA"
+                    source = "  Généré par IA (Google Gemini)"
                 else:
                     raise Exception("Clé API GEMINI_API_KEY manquante dans les Secrets")
  
@@ -1515,10 +1527,10 @@ Avec {int(emp_g["YearsAtCompany"])} ans d'ancienneté et un salaire de {int(emp_
 cet employé présente un risque de départ de {proba_g:.0f}% ({niv_g}).
  
 FACTEURS DE RISQUE IDENTIFIÉS PAR L'IA :
-{chr(10).join([f"   • {f}" for f in facteurs_risque])}
+{chr(10).join([f"    • {f}" for f in facteurs_risque])}
  
 FACTEURS PROTECTEURS :
-{chr(10).join([f"   • {f}" for f in facteurs_protection])}
+{chr(10).join([f"    • {f}" for f in facteurs_protection])}
  
 ACTIONS RECOMMANDÉES :
  
@@ -1545,7 +1557,6 @@ ANALYSE FINANCIÈRE :
 {"=" * 55}
 Rapport généré par Generative HR Analytics
 Seye Kiné & Bindia Adeline Thiara | M. Aidara | UCAO 2025-2026"""
- 
         # ── Affichage du résultat ─────────────────────────────────────────────
         st.markdown(f'<div class="section-title" style="--c:{VC};"> {type_doc} — Résultat</div>', unsafe_allow_html=True)
         st.caption(source)
