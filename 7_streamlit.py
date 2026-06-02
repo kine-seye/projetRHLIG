@@ -1485,7 +1485,7 @@ En français, format professionnel, environ 400 mots."""
         prompt_final = prompts[type_doc]
  
       # ── Génération via API Google Gemini ──────────────────────────────────
-        with st.spinner(" 🪄 Génération en cours par l'IA (Gemini)..."):
+        with st.spinner("  Génération en cours par l'IA ..."):
             try:
                 import google.generativeai as genai
                 
@@ -1499,13 +1499,13 @@ En français, format professionnel, environ 400 mots."""
                     
                     # On récupère le texte généré
                     texte_genere = response.text
-                    source = " ✨ Généré par Google Gemini (1.5 Flash)"
+                    source = "  Généré par IA"
                 else:
                     raise Exception("Clé API GEMINI_API_KEY manquante dans les Secrets")
  
             except Exception as e:
                 # ── Fallback : génération locale si API indisponible ──────────
-                source = f"⚠️ Génération locale (API non connectée : {str(e)[:30]}...)"
+                source = f" Génération locale (API non connectée : {str(e)[:30]}...)"
                 texte_genere = f"""{type_doc.upper()} — Employé #{emp_idx_g}
 {"=" * 55}
  
