@@ -13,7 +13,7 @@ from plotly.subplots import make_subplots
 import xgboost as xgb
 from xgboost import XGBClassifier
 
-
+import google.generativeai as genai
 
 
 
