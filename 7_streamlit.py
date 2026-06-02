@@ -1484,7 +1484,7 @@ En français, style corporate."""
                     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
                     
                     # Configuration du modèle
-                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    model = genai.GenerativeModel('gemini-pro')
                     response = model.generate_content(prompt_final)
                     
                     texte_genere = response.text
