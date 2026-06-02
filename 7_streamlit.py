@@ -1492,7 +1492,7 @@ En français, format professionnel, environ 400 mots."""
                 # Vérification et configuration de la clé API
                 if "GEMINI_API_KEY" in st.secrets:
                     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    model = genai.GenerativeModel('gemini-pro')
                     
                     # Appel à l'API Gemini
                     response = model.generate_content(prompt_final)
