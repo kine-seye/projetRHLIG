@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import pickle, json, warnings
 import plotly.graph_objects as go
+from xgboost import XGBClassifier
 from plotly.subplots import make_subplots
 import xgboost as xgb
 from xgboost import XGBClassifier
@@ -130,17 +131,13 @@ COLS_CAT_DEF = ['BusinessTravel','Department','Education','EducationField',
 # ── CHARGEMENT ────────────────────────────────────────────────────────────────
 @st.cache_resource
 def charger_modele():
+    import joblib
     try:
-        import pickle  # Sécurité interne 1
-        with open("mon_modele_rh.pkl", "rb") as f:
-            return pickle.load(f)
-    except Exception as e1:
-        try:
-            import joblib
-            return joblib.load("mon_modele_rh.pkl")
-        except Exception as e2:
-            st.error(f"Erreur technique de chargement du modèle : {e1} | {e2}")
-            return None
+        # On utilise DIRECTEMENT joblib puisque le fichier a été généré avec joblib.dump
+        return joblib.load("mon_modele_rh.pkl")
+    except Exception as e:
+        st.sidebar.error(f"❌ Erreur critique de lecture Joblib : {str(e)}")
+        return None
 
 @st.cache_data
 def charger_df():
@@ -158,8 +155,6 @@ FEATURES = []; COLS_FINALES = []; modele = None; preprocesseur = None
 
 if data is not None:
     try:
-        # CAS 1 : UTILISATION DE VOTRE VRAI MODÈLE ENTRAÎNÉ
-        # On vérifie que c'est un dictionnaire et qu'il contient le 'cerveau_ia'
         if isinstance(data, dict) and "cerveau_ia" in data:
             modele        = data.get("cerveau_ia")
             preprocesseur = data.get("traitement")
@@ -169,16 +164,13 @@ if data is not None:
             AUC           = float(data.get("auc", 0.8030))
             COLS_FINALES  = list(data.get("noms_colonnes", []))
             
-            # Vérification : si 'modele' est par erreur une liste, on bascule en mode simulation
-            if hasattr(modele, "dtype"): 
-                raise ValueError("Le fichier pkl ne contient pas le modèle mais une liste.")
-
+            if modele is None:
+                raise ValueError("Le modèle extrait est vide ou introuvable.")
+            
             @st.cache_data
             def enrichir_reel(_mod, _prep, _feat):
                 d = df_base.copy()
-                # On transforme les données avec VOTRE préprocesseur
                 X = _prep.transform(d[_feat])
-                # On prédit avec VOTRE vrai modèle
                 d["Probabilite"] = _mod.predict_proba(X)[:, 1]
                 d["Prediction"]  = (d["Probabilite"] >= seuil).astype(int)
                 d["Risque_Pct"]  = (d["Probabilite"] * 100).round(1)
@@ -190,31 +182,25 @@ if data is not None:
             df = enrichir_reel(modele, preprocesseur, FEATURES)
             MODELE_OK = True
             st.sidebar.success(f"✅ Vrai modèle chargé ({len(FEATURES)} variables)")
-
-        # CAS 2 : MODE SÉCURITÉ (Simulation)
         else:
             raise ValueError("Format de fichier non reconnu")
 
     except Exception as e:
-        # --- MODE SECOURS AVEC REFUGE DES ERREURS POUR DIAGNOSTIC ---
-        import numpy as np
         st.sidebar.warning(f"⚠️ Mode Secours activé")
-        
-        # CETTE LIGNE VA T'AFFICHER L'ERREUR REELLE EN PETIT DANS LA BARRE LATERALE
         st.sidebar.error(f"Détail technique : {str(e)}")
-        
-        @st.cache_data
-        def enrichir_simule():
-            d = df_base.copy()
-            np.random.seed(42)
-            base_prob = np.random.beta(2, 5, size=len(d))
-            d["Probabilite"] = np.where(d["Attrition"] == 1, np.minimum(base_prob + 0.4, 0.95), np.maximum(base_prob - 0.1, 0.02))
-            d["Risque_Pct"]  = (d["Probabilite"] * 100).round(1)
-            d["Niveau"]      = d["Probabilite"].apply(lambda p: "Critique" if p >= 0.70 else "Eleve" if p >= 0.50 else "Modere" if p >= 0.31 else "Faible")
-            return d
-        
-        df = enrichir_simule()
-        MODELE_OK = True
+        MODELE_OK = False  # Sécurité : pas de faux pavé XGBoost si le modèle est en panne
+
+# ── INITIALISATION SÉCURISÉE GLOBALE DE DF (Unique et centralisée pour le plan B) ──
+if 'df' not in globals() or df is None:
+    import numpy as np
+    df = df_base.copy()
+    np.random.seed(42)
+    base_prob = np.random.beta(2, 5, size=len(df))
+    df["Probabilite"] = np.where(df["Attrition"] == 1, np.minimum(base_prob + 0.4, 0.95), np.maximum(base_prob - 0.1, 0.02))
+    df["Prediction"]  = (df["Probabilite"] >= seuil).astype(int)
+    df["Risque_Pct"]  = (df["Probabilite"] * 100).round(1)
+    df["Niveau"]      = df["Probabilite"].apply(lambda p: "Critique" if p >= 0.70 else "Eleve" if p >= 0.50 else "Modere" if p >= seuil else "Faible")
+
 # ── SHAP helper ───────────────────────────────────────────────────────────────
 def get_explainer(model_to_explain, background_data):
     """Explainer SHAP universel (plus fiable que TreeExplainer pour XGB 3.x)"""
@@ -296,8 +282,9 @@ if nav == "Accueil":
             st.markdown(f'<div class="kc" style="--c:{c};margin-bottom:14px;"><div class="kv">{val}</div><div class="kl">{lbl}</div></div>', unsafe_allow_html=True)
  
     st.markdown("<br>", unsafe_allow_html=True)
+
  
-    # Graphique 1 — Donut
+    # Graphique 1 — Donut (S'exécutera à coup sûr maintenant !)
     n0 = int((df["Attrition"]==0).sum())
     n1 = int((df["Attrition"]==1).sum())
     fig = go.Figure(go.Pie(
