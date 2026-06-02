@@ -13,7 +13,7 @@ from plotly.subplots import make_subplots
 import xgboost as xgb
 from xgboost import XGBClassifier
 
-
+import google.generativeai as genai
 
 
 
@@ -1474,28 +1474,25 @@ En français, style corporate."""
         prompt_final = prompts.get(type_doc, prompts[" Lettre au manager"])
  
         # ── Appel sécurisé à l'API Google Gemini ──────────────────────────────
-        with st.spinner("  Génération en cours par l'IA ..."):
+        with st.spinner("l'IA rédige votre document..."):
             try:
-                # Importation dynamique et locale pour éviter les blocages au démarrage
-                import google.generativeai as genai
-                
-                # Vérification de la clé dans les secrets
+                # 1. Vérification de la clé dans les secrets
                 if "GEMINI_API_KEY" in st.secrets:
                     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
                     
-                    # Configuration du modèle
-                    model = genai.GenerativeModel('gemini-pro')
+                    # 2. Appel au modèle
+                    model = genai.GenerativeModel('gemini-1.5-flash') # Version rapide et efficace
                     response = model.generate_content(prompt_final)
                     
                     texte_genere = response.text
-                    source = " Généré en direct par l'IA "
+                    source = " Généré en direct par l'IA"
                 else:
-                    raise Exception("Clé API GEMINI_API_KEY manquante dans les Secrets Streamlit")
+                    raise ValueError("Clé API manquante dans les Secrets")
                     
             except Exception as e:
-                # ── Système de secours local (Fallback) si l'importation ou l'API échoue ──
-                source = f"⚠️ Génération locale (API déconnectée : {str(e)[:25]}...)"
-                texte_genere = f"""{type_doc.upper()} — Employé de secours #{emp_g.name if hasattr(emp_g, 'name') else 'Sélectionné'}
+                # ── Système de secours local (Fallback) ──────────
+                source = f"⚠️ Génération locale (Mode secours activé)"
+                texte_genere = f"""{type_doc.upper()} — Employé #{emp_idx_g}
 {"=" * 60}
 SITUATION :
 L'employé occupe le poste de {emp_g["JobRole"]} dans le département {emp_g["Department"]}.

@@ -1492,7 +1492,7 @@ En français, style corporate."""
             except Exception as e:
                 # ── Système de secours local (Fallback) ──────────
                 source = f"⚠️ Génération locale (Mode secours activé)"
-                texte_genere = f"""{type_doc.upper()} — Employé #{emp_idx_g} 'name') else 'Sélectionné'}
+                texte_genere = f"""{type_doc.upper()} — Employé #{emp_idx_g}
 {"=" * 60}
 SITUATION :
 L'employé occupe le poste de {emp_g["JobRole"]} dans le département {emp_g["Department"]}.
