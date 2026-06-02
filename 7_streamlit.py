@@ -1476,8 +1476,19 @@ En français, style corporate."""
         # ── Appel sécurisé à l'API Google Gemini ──────────────────────────────
         with st.spinner("  Génération en cours par l'IA ..."):
             try:
-                # Importation dynamique et locale pour éviter les blocages au démarrage
-                import google.generativeai as genai
+
+               # Tentative d'importation avec installation forcée en cas d'échec
+                try:
+                    import google.generativeai as genai
+                except ImportError:
+                    import subprocess
+                    import sys
+                    subprocess.check_call([sys.executable, "-m", "pip", "install", "google-generativeai"])
+                    # On force Python à actualiser son cache de modules installés
+                    import site
+                    from importlib import reload
+                    reload(site)
+                    import google.generativeai as genai
                 
                 # Vérification de la clé dans les secrets
                 if "GEMINI_API_KEY" in st.secrets:
