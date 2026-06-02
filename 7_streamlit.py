@@ -14,6 +14,14 @@ import xgboost as xgb
 from xgboost import XGBClassifier
 
 
+try:
+    import google.generativeai as genai
+except ImportError:
+    import os
+    os.system('pip install google-generativeai')
+    import google.generativeai as genai
+
+
 # Au tout début, après les imports, initialisez la page si elle n'existe pas
 if 'page_actuelle' not in st.session_state:
     st.session_state.page_actuelle = "Accueil"
@@ -1446,118 +1454,72 @@ Format professionnel, en français.""",
 CONTEXTE : Un employé ({emp_g["JobRole"]}, {emp_g["Department"]}, {int(emp_g["YearsAtCompany"])} ans d'ancienneté) présente un risque de départ de {proba_g:.0f}% selon notre système IA.
  
 Contraintes :
-- Maximum 150 mots
-- Objet percutant qui crée l'urgence
-- Alerter sans alarmer
-- Proposer une réunion rapide (dans les 48h)
-- 2 actions immédiates concrètes
-- Ton professionnel et confidentiel
+1. Objet de l'email : Alerte RH confidentielle - Risque de rétention d'un talent
+2. Ton : Urgent, professionnel, collaboratif.
+3. Demande de rendez-vous sous 48h.
+4. Synthèse ultra-courte des risques : {", ".join(facteurs_risque)}.
+En français, maximum 200 mots.""",
  
-En français.""",
+            " Rapport individuel": f"""Tu es un Analyste RH. Rédige un rapport individuel d'évaluation des risques de turnover pour la direction.
  
-            " Rapport individuel": f"""Tu es un expert en analyse RH et People Analytics. Rédige un rapport individuel complet et professionnel.
+DONNÉES :
+- Employé : {emp_g["JobRole"]} | Risque : {proba_g:.0f}% ({niv_g})
+- Salaire : {int(emp_g["MonthlyIncome"])} € | Ancienneté : {int(emp_g["YearsAtCompany"])} ans
+- Facteurs négatifs : {", ".join(facteurs_risque)}
+- Facteurs positifs : {", ".join(facteurs_protection)}
  
-DONNÉES COMPLÈTES DE L'EMPLOYÉ :
-- Poste : {emp_g["JobRole"]} | Département : {emp_g["Department"]}
-- Âge : {int(emp_g["Age"])} ans | Ancienneté : {int(emp_g["YearsAtCompany"])} ans
-- Salaire : {int(emp_g["MonthlyIncome"])} €/mois
-- Performance : {emp_g["PerformanceRating"]}
-- Satisfaction travail : {emp_g["JobSatisfaction"]} | WLB : {emp_g["WorkLifeBalance"]}
-- Heures supplémentaires : {"Oui" if emp_g["OverTime"] == "Yes" else "Non"}
-- Années sans promotion : {int(emp_g["YearsSinceLastPromotion"])}
-- Distance domicile : {int(emp_g["DistanceFromHome"])} km
-- Statut : {emp_g["MaritalStatus"]}
-- SCORE DE RISQUE IA : {proba_g:.1f}% (Niveau {niv_g})
-- Principaux facteurs de risque : {", ".join(facteurs_risque)}
-- Facteurs protecteurs : {", ".join(facteurs_protection)}
- 
-Rédige un rapport avec :
-1. Résumé exécutif (3 phrases)
-2. Analyse détaillée des facteurs de risque
-3. Points forts à valoriser
-4. Recommandations stratégiques RH
-5. Plan d'action sur 90 jours
-6. Conclusion
- 
-En français, format professionnel, environ 400 mots."""
+Structure requise :
+1. Diagnostic de vulnérabilité RH
+2. Évaluation de l'impact financier d'un départ
+3. Matrice Risques / Actions
+4. Avis et Recommandation finale de l'analyste
+En français, style corporate."""
         }
  
-        prompt_final = prompts[type_doc]
+        prompt_final = prompts.get(type_doc, prompts[" Lettre au manager"])
  
-      # ── Génération via API Google Gemini ──────────────────────────────────
-        # ── Génération via API Google Gemini ──────────────────────────────────
-        with st.spinner("  Génération en cours par l'IA ..."):
+        # ── Appel sécurisé à l'API Google Gemini ──────────────────────────────
+        with st.spinner(" 🪄 Génération en cours par l'IA (Gemini)..."):
             try:
+                # Importation dynamique et locale pour éviter les blocages au démarrage
                 import google.generativeai as genai
                 
-                # Vérification et configuration de la clé API
+                # Vérification de la clé dans les secrets
                 if "GEMINI_API_KEY" in st.secrets:
                     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
                     
-                    # Système de secours multi-modèles pour éviter à 100% l'erreur 404
-                    try:
-                        # 1. On tente le modèle standard actuel (2026)
-                        model = genai.GenerativeModel('gemini-1.5-flash')
-                        response = model.generate_content(prompt_final)
-                    except Exception:
-                        try:
-                            # 2. Si échec, on tente avec le préfixe complet exigé par certaines versions
-                            model = genai.GenerativeModel('models/gemini-1.5-flash')
-                            response = model.generate_content(prompt_final)
-                        except Exception:
-                            # 3. Dernier recours si la bibliothèque cloud est ancienne
-                            model = genai.GenerativeModel('gemini-pro')
-                            response = model.generate_content(prompt_final)
+                    # Configuration du modèle
+                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    response = model.generate_content(prompt_final)
                     
-                    # On récupère le texte généré
                     texte_genere = response.text
-                    source = "  Généré par IA (Google Gemini)"
+                    source = " ✨ Généré en direct par l'IA (Google Gemini)"
                 else:
-                    raise Exception("Clé API GEMINI_API_KEY manquante dans les Secrets")
- 
+                    raise Exception("Clé API GEMINI_API_KEY manquante dans les Secrets Streamlit")
+                    
             except Exception as e:
-                # ── Fallback : génération locale si API indisponible ──────────
-                source = f" Génération locale (API non connectée : {str(e)[:30]}...)"
-                texte_genere = f"""{type_doc.upper()} — Employé #{emp_idx_g}
-{"=" * 55}
- 
+                # ── Système de secours local (Fallback) si l'importation ou l'API échoue ──
+                source = f"⚠️ Génération locale (API déconnectée : {str(e)[:25]}...)"
+                texte_genere = f"""{type_doc.upper()} — Employé de secours #{emp_g.name if hasattr(emp_g, 'name') else 'Sélectionné'}
+{"=" * 60}
 SITUATION :
 L'employé occupe le poste de {emp_g["JobRole"]} dans le département {emp_g["Department"]}.
 Avec {int(emp_g["YearsAtCompany"])} ans d'ancienneté et un salaire de {int(emp_g["MonthlyIncome"])} €/mois,
 cet employé présente un risque de départ de {proba_g:.0f}% ({niv_g}).
  
-FACTEURS DE RISQUE IDENTIFIÉS PAR L'IA :
-{chr(10).join([f"    • {f}" for f in facteurs_risque])}
+FACTEURS DE RISQUE PRINCIPAUX :
+{chr(10).join([f"   • {f}" for f in facteurs_risque]) if facteurs_risk else "   • Aucun facteur critique détecté"}
  
 FACTEURS PROTECTEURS :
-{chr(10).join([f"    • {f}" for f in facteurs_protection])}
+{chr(10).join([f"   • {f}" for f in facteurs_protection]) if facteurs_protection else "   • Données protectrices insuffisantes"}
  
-ACTIONS RECOMMANDÉES :
+RECOMMANDATION :
+Veuillez vérifier la configuration de votre clé 'GEMINI_API_KEY' dans vos paramètres Streamlit Secrets pour activer la rédaction automatique personnalisée par l'intelligence artificielle.
  
-1. IMMÉDIAT (0-7 jours) :
-   → Entretien individuel confidentiel avec le manager direct
-   → {"Discuter de la charge de travail et des heures supplémentaires" if emp_g["OverTime"] == "Yes" else "Discuter des perspectives d'évolution de carrière"}
-   → Écouter sans juger, comprendre les frustrations
+{"=" * 60}
+Générateur de documents RH | UCAO 2025-2026"""
  
-2. COURT TERME (7-30 jours) :
-   → {"Proposer une réduction des heures supplémentaires de 30%" if emp_g["OverTime"] == "Yes" else "Étudier une opportunité de promotion ou de revalorisation"}
-   → Mettre en place un plan de formation personnalisé
-   → Revoir les objectifs et améliorer la reconnaissance
- 
-3. MOYEN TERME (30-90 jours) :
-   → Plan de développement de carrière individualisé
-   → {"Révision du package de rémunération" if proba_g > 70 else "Programme de mentorat et suivi mensuel"}
-   → Évaluation à 90 jours de l'évolution du risque
- 
-ANALYSE FINANCIÈRE :
-  Coût estimé d'un départ       : {int(emp_g["MonthlyIncome"]) * 6:,} € (6 mois de salaire)
-  Coût des actions de rétention  : ~{int(emp_g["MonthlyIncome"]) * 0.15 * 12:,} € (15% augmentation/an)
-  Économie si rétention réussie  : {int(emp_g["MonthlyIncome"] * 6 - emp_g["MonthlyIncome"] * 0.15 * 12):,} €
- 
-{"=" * 55}
-Rapport généré par Generative HR Analytics
-Seye Kiné & Bindia Adeline Thiara | M. Aidara | UCAO 2025-2026"""
-        # ── Affichage du résultat ─────────────────────────────────────────────
+               # ── Affichage du résultat ─────────────────────────────────────────────
         st.markdown(f'<div class="section-title" style="--c:{VC};"> {type_doc} — Résultat</div>', unsafe_allow_html=True)
         st.caption(source)
  
