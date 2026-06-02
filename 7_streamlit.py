@@ -1484,29 +1484,28 @@ En français, format professionnel, environ 400 mots."""
  
         prompt_final = prompts[type_doc]
  
-        # ── Génération via API ────────────────────────────────────────────────
-        with st.spinner(" Génération en cours par l'IA..."):
+      # ── Génération via API Google Gemini ──────────────────────────────────
+        with st.spinner(" 🪄 Génération en cours par l'IA (Gemini)..."):
             try:
-                import requests
-                response = requests.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={"Content-Type": "application/json"},
-                    json={
-                        "model": "claude-sonnet-4-20250514",
-                        "max_tokens": 1000,
-                        "messages": [{"role": "user", "content": prompt_final}]
-                    },
-                    timeout=30
-                )
-                if response.status_code == 200:
-                    texte_genere = response.json()["content"][0]["text"]
-                    source = " Généré par Claude (Anthropic)"
+                import google.generativeai as genai
+                
+                # Vérification et configuration de la clé API
+                if "GEMINI_API_KEY" in st.secrets:
+                    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    
+                    # Appel à l'API Gemini
+                    response = model.generate_content(prompt_final)
+                    
+                    # On récupère le texte généré
+                    texte_genere = response.text
+                    source = " ✨ Généré par Google Gemini (1.5 Flash)"
                 else:
-                    raise Exception(f"Erreur API {response.status_code}")
+                    raise Exception("Clé API GEMINI_API_KEY manquante dans les Secrets")
  
             except Exception as e:
                 # ── Fallback : génération locale si API indisponible ──────────
-                source = "⚠️ Génération locale (API non connectée)"
+                source = f"⚠️ Génération locale (API non connectée : {str(e)[:30]}...)"
                 texte_genere = f"""{type_doc.upper()} — Employé #{emp_idx_g}
 {"=" * 55}
  
@@ -1516,10 +1515,10 @@ Avec {int(emp_g["YearsAtCompany"])} ans d'ancienneté et un salaire de {int(emp_
 cet employé présente un risque de départ de {proba_g:.0f}% ({niv_g}).
  
 FACTEURS DE RISQUE IDENTIFIÉS PAR L'IA :
-{chr(10).join([f"  • {f}" for f in facteurs_risque])}
+{chr(10).join([f"   • {f}" for f in facteurs_risque])}
  
 FACTEURS PROTECTEURS :
-{chr(10).join([f"  • {f}" for f in facteurs_protection])}
+{chr(10).join([f"   • {f}" for f in facteurs_protection])}
  
 ACTIONS RECOMMANDÉES :
  
@@ -1555,9 +1554,8 @@ Seye Kiné & Bindia Adeline Thiara | M. Aidara | UCAO 2025-2026"""
         <div style="background:{GRC};border:1px solid {VC}44;border-radius:12px;
         padding:22px 26px;font-size:13px;color:{TXC};line-height:1.9;
         white-space:pre-wrap;max-height:520px;overflow-y:auto;
-        font-family:'Courier New',monospace;">{texte_genere}</div>
+        font-family:\'Courier New\',monospace;">{texte_genere}</div>
         """, unsafe_allow_html=True)
- 
         # ── Boutons de téléchargement ─────────────────────────────────────────
         st.markdown("<br>", unsafe_allow_html=True)
         dl1, dl2 = st.columns(2)
