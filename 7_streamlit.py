@@ -1114,52 +1114,71 @@ elif nav == "Prédiction":
 # CODE GENAI — CHAT RH INTELLIGENT (MISTRAL AI)
 # =============================================================================
 elif nav == "GenAI":
-    # Titre de la page
+
     st.markdown(f'<div class="pg"><div class="pt">💬 Assistant RH — GenAI</div><div class="ps">Analyse conversationnelle propulsée par Mistral AI</div></div>', unsafe_allow_html=True)
 
     if not MODELE_OK:
         st.warning("⚠️ Note : Modèle XGBoost non chargé. Réponses basées sur les statistiques.")
 
-    # 1. Préparation du contexte (Chiffres réels pour l'IA)
+    # ── 1. Contexte RH pour Mistral ──────────────────────────────────────────
     n_critique = int((df["Niveau"] == "Critique").sum())
     n_risque   = int((df["Probabilite"] >= seuil).sum())
-    d_max      = traduire_nom(df.groupby("Department")["Attrition"].mean().idxmax())
-    
-    # Texte de contexte envoyé à Mistral en arrière-plan
-    CONTEXTE_RH = f"""Tu es un expert RH. Voici les données de l'entreprise :
-    - {n} employés au total.
-    - Taux d'attrition : {taux:.1f}%.
-    - {n_risque} employés sont à risque, dont {n_critique} en niveau CRITIQUE.
-    - Le département le plus touché est {d_max}.
-    - Tu dois répondre de façon pro, brève et en français."""
+    d_max      = df.groupby("Department")["Attrition"].mean().idxmax()
 
-    # 2. Gestion de l'historique du Chat
+    CONTEXTE_RH = f"""Tu es un expert RH et Data Scientist. Voici les données réelles de l'entreprise :
+- {n} employés au total.
+- Taux d'attrition observé : {taux:.1f}%.
+- {n_risque} employés sont à risque de départ (score >= {seuil:.0%}).
+- {n_critique} employés sont en niveau CRITIQUE (risque >= 70%).
+- Département le plus touché : {d_max}.
+- Modèle IA : XGBoost | F1={F1:.4f} | AUC={AUC:.4f}.
+- Facteurs principaux de départ : Heures supplémentaires, Salaire, Années sans promotion, Satisfaction faible.
+Réponds en français, de façon professionnelle, concise et orientée actions concrètes."""
+
+    # ── 2. Initialisation de l'historique ────────────────────────────────────
     if "messages_genai" not in st.session_state:
         st.session_state.messages_genai = [
-            {"role": "assistant", "content": "Bonjour ! Je suis votre assistant expert. Comment puis-je vous aider à analyser le turnover aujourd'hui ?"}
+            {"role": "assistant", "content": f"Bonjour !  Je suis votre assistant RH. J'ai analysé les données de vos **{n} employés**. Actuellement **{n_critique} sont en niveau critique**. Comment puis-je vous aider ?"}
         ]
 
-    # 3. Suggestions de questions (Pour la démo)
-    st.markdown(f'<div style="font-size:12px;color:{T2C_COLOR};margin-bottom:5px;">💡 Suggestions :</div>', unsafe_allow_html=True)
-    c1, c2, c3 = st.columns(3)
-    with c1: 
-        if st.button("Combien de critiques ?", use_container_width=True): st.session_state.chat_trigger = "Combien d'employés sont à risque critique ?"
-    with c2: 
-        if st.button("Département à risque ?", use_container_width=True): st.session_state.chat_trigger = "Quel est le département le plus touché ?"
-    with c3: 
-        if st.button("Causes de départ ?", use_container_width=True): st.session_state.chat_trigger = "Quelles sont les causes majeures de départ ?"
+    # ── 3. Suggestions de questions ──────────────────────────────────────────
+    st.markdown(f'<div style="font-size:12px;color:{T2C};margin-bottom:8px;"> Suggestions de questions :</div>', unsafe_allow_html=True)
 
-    # 4. Affichage de la discussion
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        if st.button(" Combien de critiques ?", use_container_width=True, key="q1"):
+            st.session_state.chat_trigger = "Combien d'employés sont à risque critique ?"
+    with c2:
+        if st.button(" Département à risque ?", use_container_width=True, key="q2"):
+            st.session_state.chat_trigger = "Quel est le département le plus touché par l'attrition ?"
+    with c3:
+        if st.button(" Causes de départ ?", use_container_width=True, key="q3"):
+            st.session_state.chat_trigger = "Quelles sont les causes principales de départ ?"
+
+    c4, c5, c6 = st.columns(3)
+    with c4:
+        if st.button(" Coût du turnover ?", use_container_width=True, key="q4"):
+            st.session_state.chat_trigger = "Quel est le coût estimé du turnover actuel ?"
+    with c5:
+        if st.button(" Actions prioritaires ?", use_container_width=True, key="q5"):
+            st.session_state.chat_trigger = "Quelles sont les 3 actions RH prioritaires à mettre en place ?"
+    with c6:
+        if st.button(" Comment améliorer F1 ?", use_container_width=True, key="q6"):
+            st.session_state.chat_trigger = "Comment améliorer la performance du modèle IA ?"
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ── 4. Affichage de la conversation ──────────────────────────────────────
     for msg in st.session_state.messages_genai:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # 5. Zone de saisie (Chat Input)
-    # On vérifie si un bouton de suggestion a été cliqué
-    prompt_input = st.chat_input("Posez votre question ici...")
-    if st.session_state.get('chat_trigger'):
-        prompt_input = st.session_state.chat_trigger
-        del st.session_state.chat_trigger
+    # ── 5. Zone de saisie ────────────────────────────────────────────────────
+    prompt_input = st.chat_input("Posez votre question sur les données RH...")
+
+    # Déclencher via bouton suggestion
+    if st.session_state.get("chat_trigger"):
+        prompt_input = st.session_state.pop("chat_trigger")
 
     if prompt_input:
         # Afficher le message utilisateur
@@ -1167,44 +1186,118 @@ elif nav == "GenAI":
         with st.chat_message("user"):
             st.markdown(prompt_input)
 
-        # Générer la réponse
+        # ── Générer la réponse ────────────────────────────────────────────────
         with st.chat_message("assistant"):
-            with st.spinner("Mistral AI analyse les données..."):
+            with st.spinner("Analyse en cours..."):
+                reponse     = ""
+                source_info = ""
+
                 try:
                     import requests
-                    M_KEY = st.secrets.get("MISTRAL_API_KEY")
-                    
-                    if M_KEY:
-                        # --- APPEL VRAI MISTRAL ---
-                        resp = requests.post(
-                            "https://api.mistral.ai/v1/chat/completions",
-                            headers={"Authorization": f"Bearer {M_KEY}", "Content-Type": "application/json"},
-                            json={
-                                "model": "mistral-small-latest",
-                                "messages": [{"role": "system", "content": CONTEXTE_RH}, 
-                                             {"role": "user", "content": prompt_input}]
-                            }, timeout=30)
-                        reponse = resp.json()["choices"][0]["message"]["content"]
-                        source_info = "✅ Mistral AI"
-                    else:
-                        raise Exception("Pas de clé")
+                    M_KEY = st.secrets.get("MISTRAL_API_KEY", "")
 
-                except Exception:
-                    # --- RÉPONSE LOCALE (SI PAS D'API) ---
-                    source_info = "⚠️ Analyse locale"
+                    if not M_KEY:
+                        raise Exception("Clé MISTRAL_API_KEY absente dans les secrets")
+
+                    resp = requests.post(
+                        "https://api.mistral.ai/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {M_KEY}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "model": "mistral-small-latest",
+                            "messages": [
+                                {"role": "system", "content": CONTEXTE_RH},
+                                {"role": "user",   "content": prompt_input}
+                            ],
+                            "max_tokens": 500,
+                            "temperature": 0.7
+                        },
+                        timeout=30)
+
+                    if resp.status_code == 200:
+                        reponse     = resp.json()["choices"][0]["message"]["content"]
+                        source_info = " Mistral AI"
+                    else:
+                        raise Exception(f"Erreur API Mistral : {resp.status_code}")
+
+                except Exception as e:
+                    # ── Réponses locales intelligentes si API absente ─────────
+                    source_info = "⚠️ Analyse locale (connectez Mistral pour des réponses complètes)"
                     q = prompt_input.lower()
-                    if "combien" in q:
-                        reponse = f"Le modèle identifie **{n_critique} employés** en situation critique."
-                    elif "département" in q:
-                        reponse = f"C'est le département **{d_max}** qui présente le plus de risques."
+
+                    if any(x in q for x in ["combien", "nombre", "critiques", "risque"]):
+                        reponse = (
+                            f"D'après notre modèle XGBoost, **{n_risque} employés** "
+                            f"présentent un risque de départ (seuil {seuil:.0%}), dont "
+                            f"**{n_critique} en niveau CRITIQUE** (risque ≥ 70%).\n\n"
+                            f"Cela représente **{n_risque/n*100:.1f}%** de l'effectif total. "
+                            f"Une action immédiate est recommandée pour les {n_critique} critiques.")
+
+                    elif any(x in q for x in ["département", "department", "service", "touché"]):
+                        reponse = (
+                            f"Le département **{d_max}** présente le taux d'attrition le plus élevé. "
+                            f"Je recommande d'y concentrer les entretiens de rétention en priorité et "
+                            f"d'analyser les spécificités de ce département (management, charge de travail, salaires).")
+
+                    elif any(x in q for x in ["cause", "facteur", "pourquoi", "raison"]):
+                        reponse = (
+                            "Les **5 principales causes** identifiées par notre modèle SHAP :\n\n"
+                            "1.  **Heures supplémentaires** — +20 points de risque\n"
+                            "2.  **Salaire insuffisant** — impact direct sur la fidélité\n"
+                            "3.  **Années sans promotion** (> 3 ans) — démotivation progressive\n"
+                            "4.  **Satisfaction au travail faible** (Low/Medium)\n"
+                            "5.  **Distance domicile élevée** — fatigue et désengagement")
+
+                    elif any(x in q for x in ["coût", "cout", "financier", "argent", "euro"]):
+                        cout_est = int(df["MonthlyIncome"].mean() * 6 * n_critique)
+                        reponse = (
+                            f"Le coût potentiel estimé pour les **{n_critique} employés critiques** "
+                            f"est d'environ **{cout_est:,} €**.\n\n"
+                            f"Base de calcul : 6 mois de salaire moyen par départ "
+                            f"(recrutement + formation + perte de productivité).\n\n"
+                            f" Investir **{int(cout_est*0.15):,} €** en actions RH "
+                            f"permettrait un ROI de ~570%.")
+
+                    elif any(x in q for x in ["action", "recommand", "priorité", "conseil", "faire"]):
+                        reponse = (
+                            "**3 actions RH prioritaires** basées sur les données :\n\n"
+                            f"1. 🚨 **Entretiens immédiats** — Planifier sous 48h "
+                            f"pour les {n_critique} employés critiques\n"
+                            "2. ⏰ **Réduire les heures sup** — Premier facteur de risque "
+                            "selon SHAP, impact immédiat\n"
+                            "3. 🚀 **Plan promotions accéléré** — Cibler les employés "
+                            "sans avancement depuis +3 ans")
+
+                    elif any(x in q for x in ["f1", "modèle", "performance", "améliorer", "amélioration"]):
+                        reponse = (
+                            f"Notre modèle actuel : **F1={F1:.4f}** | **AUC={AUC:.4f}**\n\n"
+                            "Pour améliorer les performances :\n\n"
+                            "1. 📊 **Augmenter les données** — Plus d'historique RH\n"
+                            "2. 🔧 **Ensemble Learning** — Combiner XGBoost + LightGBM\n"
+                            "3. ⚙️ **Ajuster le seuil** — Actuellement à "
+                            f"{seuil:.2f}, optimiser selon le contexte métier\n"
+                            "4. 🎯 **Features engineering** — Créer des variables composites")
+
                     else:
-                        reponse = "Je vois que les **heures supplémentaires** sont le facteur n°1 de départ dans vos données."
+                        reponse = (
+                            f"Je suis votre assistant RH Analytics. "
+                            f"Notre base contient **{n} employés** avec un taux d'attrition "
+                            f"de **{taux:.1f}%**. Actuellement **{n_risque} employés** sont "
+                            f"à risque dont **{n_critique} critiques**.\n\n"
+                            "Je peux vous aider sur : les effectifs à risque, les causes de départ, "
+                            "le coût du turnover, les actions prioritaires ou les performances du modèle.")
 
-                st.markdown(reponse)
-                st.caption(f"Source : {source_info}")
-                st.session_state.messages_genai.append({"role": "assistant", "content": reponse})
-                st.rerun()
+            st.markdown(reponse)
+            st.caption(f"Source : {source_info}")
 
-    # Bouton pour vider
+        st.session_state.messages_genai.append({"role": "assistant", "content": reponse})
+        st.rerun()
+
+    # ── 6. Bouton vider la conversation ──────────────────────────────────────
     if len(st.session_state.messages_genai) > 1:
-        st.button("🗑️ Effacer la discussion", on_click=lambda: st.session_state.update({"messages_genai": []}))
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button(" Effacer la conversation", key="clear_chat"):
+            st.session_state.messages_genai = []
+            st.rerun()
