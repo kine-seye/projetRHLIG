@@ -270,10 +270,6 @@ PAGES_SIMPLIFIEES = ["Accueil", "Exploration", "Prédiction", "GenAI"]
 
 # --- 3. CONSTRUCTION DE LA SIDEBAR ---
 with st.sidebar:
-    # A. Bouton de changement de mode (Toggle unique)
-    st.session_state.mode_sombre = st.toggle("🌓 Mode Sombre", value=st.session_state.mode_sombre)
-    
-   with st.sidebar:
     # 1. Le bouton de changement de mode en premier
     st.session_state.mode_sombre = st.toggle("🌓 Mode Sombre", value=st.session_state.mode_sombre)
     
@@ -291,7 +287,7 @@ with st.sidebar:
       </div>
     </div><hr style="border-color:{BOC_COLOR};margin:0 0 15px;">
     """, unsafe_allow_html=True)
-       
+    
 # --- 4. RÉGLAGE DES COULEURS DYNAMIQUES (Pour que le mode clair fonctionne partout) ---
 if not st.session_state.mode_sombre:
     BGC = "#F5F7FA"; CAC_BG = "#FFFFFF"; GRC_BG = "#F8F9FA"
