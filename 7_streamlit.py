@@ -22,7 +22,7 @@ if 'page_actuelle' not in st.session_state:
     st.session_state.page_actuelle = "Accueil"
     
 # Liste officielle des pages (à utiliser partout pour éviter les erreurs)
-PAGES = ["Accueil", "Exploration", "Prédiction", "GenAI"]
+PAGES = ["Accueil", "Exploration", "Prédiction","GenAI"]
 
 
 # Dictionnaire pour traduire les variables techniques en français lisible
@@ -1021,7 +1021,7 @@ elif nav == "Prédiction":
 # =============================================================================
 # CODE GENAI — LETTRE RH PERSONNALISEE PAR LLM
 
-elif nav == " GenAI":
+elif nav == "GenAI":
     st.markdown(f'<div class="pg"><div class="pt">🤖 Assistant RH — GenAI</div><div class="ps">Posez vos questions RH — Propulsé par Mistral/Llama</div></div>', unsafe_allow_html=True)
 
     if not MODELE_OK:
