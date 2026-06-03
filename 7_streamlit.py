@@ -1197,11 +1197,15 @@ RÈGLES DE RÉPONSE :
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── Affichage conversation ────────────────────────────────────────────────
-    for msg in st.session_state.messages_genai:
-        avatar = "🤖" if msg["role"] == "assistant" else "👤"
-        with st.chat_message(msg["role"], avatar=avatar):
-            st.markdown(msg["content"])
+    # APRÈS — sans avatars
+        for msg in st.session_state.messages_genai:
+            with st.chat_message(msg["role"]):
+                st.markdown(msg["content"])
+
+        # ...
+        with st.chat_message("user"):
+        # ...
+        with st.chat_message("assistant"):
 
     # ── Zone de saisie ────────────────────────────────────────────────────────
     prompt_input = st.chat_input("Posez votre question RH ici...")
