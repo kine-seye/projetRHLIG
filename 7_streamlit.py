@@ -73,20 +73,19 @@ def traduire_nom(nom_tech):
     return nom_clair.replace("_", " : ")
 
 
+
+import warnings
+
 warnings.filterwarnings("ignore")
- 
-st.set_page_config(page_title="HR Analytics", page_icon="👥",
-    layout="wide", initial_sidebar_state="expanded")
 
-VC="#00C896"; RC="#FF4B6E"; BC="#4A9EF5"; OC="#FFD166"
-PC="#9B72F5"; OGC="#FF8C42"; FOC="#0F1923"; CAC="#1A2535"
-GRC="#243044"; TXC="#E8F0FE"; T2C="#8FA3BF"; GIC="#2A3A50"; BOC="#3A4F6A"
+# Configuration de la page (Doit être la toute première commande Streamlit)
+st.set_page_config(page_title="HR Analytics", page_icon="👥", layout="wide", initial_sidebar_state="expanded")
 
-# --- 1. INITIALISATION DU MODE D'AFFICHAGE ---
+# --- 1. CONFIGURATION INITIALE DU THEME ---
 if "mode_sombre" not in st.session_state:
     st.session_state.mode_sombre = True
 
-# --- 2. COULEURS DE BASE DE LA PALETTE (Status & Accents toujours identiques) ---
+# --- 2. PALETTE DE COULEURS FIXES (Accents & États) ---
 VC = "#00C896"   # Vert (Stable/Faible)
 RC = "#FF4B6E"   # Rouge (Parti/Critique)
 BC = "#4A9EF5"   # Bleu (Info/Neutre)
@@ -94,45 +93,44 @@ OC = "#FFD166"   # Jaune/Or (Seuil/Modéré)
 PC = "#9B72F5"   # Violet (SHAP)
 OGC = "#FF8C42"  # Orange (Élevé)
 
-# --- 3. DÉFINITION DYNAMIQUE DU THÈME THÉMATIQUE ---
+# --- 3. LOGIQUE DYNAMIQUE DE SÉLECTION DU THÈME ---
 if st.session_state.mode_sombre:
-    FOC = "#0F1923"  # Fond global de l'application
-    CAC = "#1A2535"  # Fond des cartes / barre latérale
-    GRC = "#243044"  # Fond des sous-blocs / graphiques
+    FOC = "#0F1923"  # Fond de l'application
+    CAC = "#1A2535"  # Fond des cartes principales (Sidebar, Onglets, Fiches)
+    GRC = "#243044"  # Fond des sous-blocs et des graphiques Plotly
     TXC = "#E8F0FE"  # Texte principal
     T2C = "#8FA3BF"  # Texte secondaire
     BOC = "#3A4F6A"  # Bordures
-    GIC = "#2A3A50"  # Lignes de grille des graphiques
+    GIC = "#2A3A50"  # Grille des graphiques Plotly
 else:
-    # Couleurs Mode Clair ajustées pour garder un excellent contraste
-    FOC = "#F5F7FA"  
+    # Mode Clair optimisé avec d'excellents contrastes de lecture
+    FOC = "#F8FAFC"  
     CAC = "#FFFFFF"  
-    GRC = "#EEF2F7"  
-    TXC = "#1A2535"  
-    T2C = "#556080"  
+    GRC = "#F1F5F9"  
+    TXC = "#0F172A"  # Texte principal très sombre pour être parfaitement lisible
+    T2C = "#64748B"  # Texte secondaire
     BOC = "#CBD5E0"  
     GIC = "#E2E8F0"  
 
-# --- 4. MISE À JOUR DYNAMIQUE DES DICTIONNAIRES POUR PLOTLY ---
-# En réassignant ces variables directement, tes fonctions graphiques Plotly (ex: LAY, ax()) 
-# n'auront pas besoin d'être modifiées et s'adapteront tout de suite !
+# Mise à jour immédiate du dictionnaire Plotly
 LAY = dict(paper_bgcolor=CAC, plot_bgcolor=GRC, font=dict(color=TXC, family="Inter,sans-serif"))
 
 def ax(t=""):
     return dict(title=t, gridcolor=GIC, showgrid=True, zeroline=False, tickfont=dict(color=T2C))
 
-# --- 5. APPLICATION DU STYLE CSS INJECTÉ ---
+# --- 4. APPLICATION DU STYLE INJECTÉ CORRIGÉ ---
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;600;700;800;900&display=swap');
 * {{ font-family: 'Inter', sans-serif !important; }}
 
-/* Nettoyage des espacements du conteneur principal */
+/* Gestion des marges et du positionnement haut */
 .block-container {{ 
-    padding-top: 1.2rem !important; 
+    padding-top: 1.8rem !important; 
+    padding-bottom: 2rem !important;
 }}
 
-/* Fond de l'application */
+/* Fond global de l'application */
 .stApp {{ background-color: {FOC}; }}
 
 /* Barre latérale (Sidebar) */
@@ -142,34 +140,121 @@ section[data-testid="stSidebar"] {{
 }}
 
 /* Onglets (Tabs) */
-.stTabs [data-baseweb="tab-list"] {{ background-color: {CAC}; border-radius: 10px; padding: 4px; border: 1px solid {BOC}; }}
-.stTabs [data-baseweb="tab"] {{ color: {T2C} !important; border-radius: 8px !important; }}
-.stTabs [aria-selected="true"] {{ background-color: {GRC} !important; color: {TXC} !important; }}
+.stTabs [data-baseweb="tab-list"] {{ 
+    background-color: {CAC}; 
+    border-radius: 12px; 
+    padding: 6px; 
+    border: 1px solid {BOC}; 
+}}
+.stTabs [data-baseweb="tab"] {{ 
+    color: {T2C} !important; 
+    border-radius: 8px !important; 
+    font-weight: 600 !important;
+}}
+.stTabs [aria-selected="true"] {{ 
+    background-color: {GRC} !important; 
+    color: {TXC} !important; 
+}}
 
-/* Listes déroulantes (Selectbox) */
-.stSelectbox>div>div {{ background-color: {GRC} !important; border: 1px solid {BOC} !important; color: {TXC} !important; border-radius: 8px !important; }}
+/* =============================================================================
+   🎯 CORRECTION DU BUG DE CONTRASTE DES INPUTS / SELECTBOXES (MODE CLAIR/SOMBRE)
+   ============================================================================= */
+/* Forcer la couleur de fond et la bordure des sélecteurs et inputs */
+.stSelectbox>div>div, .stTextInput>div>div, .stMultiSelect>div>div {{ 
+    background-color: {GRC} !important; 
+    border: 1px solid {BOC} !important; 
+    border-radius: 8px !important; 
+}}
 
-/* Titres et En-têtes */
-h1, h2, h3, h4 {{ color: {TXC} !important; }}
-.section-title {{ font-size: 13px; font-weight: 800; color: {TXC}; padding: 10px 0 8px; border-bottom: 2px solid var(--c); margin-bottom: 14px; }}
+/* Forcer la couleur du texte écrit ET du texte sélectionné à l'intérieur pour éviter le blanc sur blanc */
+.stSelectbox div, .stTextInput div, .stMultiSelect div, .stSelectbox span, .stTextInput input {{
+    color: {TXC} !important;
+}}
 
-/* Composants cartes et indicateurs personnalisés */
-.pg {{ background: {CAC}; border: 1px solid {BOC}; border-radius: 14px; padding: 20px 24px; margin-bottom: 16px; }}
-.kc {{ background: {CAC}; border: 1px solid {BOC}; border-top: 3px solid var(--c); border-radius: 12px; padding: 14px 12px; text-align: center; }}
-.ib {{ background: {CAC}; border: 1px solid {BOC}; border-left: 4px solid var(--c); border-radius: 0 10px 10px 0; padding: 12px 16px; }}
+/* Ajustement des labels au-dessus des inputs */
+div[data-testid="stWidgetLabel"] p {{
+    color: {TXC} !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}}
 
-.pt {{ font-size: 21px; font-weight: 900; color: {TXC}; margin-bottom: 4px; }}
+/* =============================================================================
+   📐 DESIGN DES COMPOSANTS PERSONNALISÉS (KPI, CARTES, INSIGHTS)
+   ============================================================================= */
+/* Bannière de page */
+.pg {{ 
+    background-color: {CAC}; 
+    border: 1px solid {BOC}; 
+    border-radius: 14px; 
+    padding: 20px 24px; 
+    margin-bottom: 20px; 
+}}
+.pt {{ font-size: 22px; font-weight: 900; color: {TXC}; margin-bottom: 4px; }}
 .ps {{ font-size: 12px; color: {T2C}; }}
-.kv {{ font-size: 24px; font-weight: 900; color: var(--c); }}
-.kl {{ font-size: 10px; color: {T2C}; text-transform: uppercase; letter-spacing: .8px; margin-top: 4px; font-weight: 600; }}
 
-/* Cartes d'informations de l'employé */
-.info-card {{ background-color: {CAC}; border: 1px solid {BOC}; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }}
-.info-lbl {{ font-size: 10px; color: {T2C}; margin-bottom: 3px; }}
+/* Cartes KPI (Haut de page) */
+.kc {{ 
+    background-color: {CAC}; 
+    border: 1px solid {BOC}; 
+    border-top: 4px solid var(--c); 
+    border-radius: 12px; 
+    padding: 16px 14px; 
+    text-align: center; 
+}}
+.kv {{ font-size: 26px; font-weight: 900; color: var(--c); line-height: 1.2; }}
+.kl {{ font-size: 10px; color: {T2C}; text-transform: uppercase; letter-spacing: .8px; margin-top: 6px; font-weight: 700; }}
+
+/* Blocs d'insights latéraux */
+.ib {{ 
+    background-color: {CAC}; 
+    border: 1px solid {BOC}; 
+    border-left: 4px solid var(--c); 
+    border-radius: 0 12px 12px 0; 
+    padding: 14px 18px; 
+}}
+.it {{ font-size: 10px; font-weight: 700; color: var(--c); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }}
+.iv {{ font-size: 18px; font-weight: 900; color: {TXC}; margin-bottom: 2px; }}
+
+/* Fiches d'informations individuelles (Profil) */
+.info-card {{ 
+    background-color: {CAC}; 
+    border: 1px solid {BOC}; 
+    border-radius: 8px; 
+    padding: 12px; 
+    margin-bottom: 10px; 
+}}
+.info-lbl {{ font-size: 10px; color: {T2C}; margin-bottom: 4px; font-weight: 600; }}
 .info-val {{ font-size: 13px; font-weight: 700; color: {TXC}; }}
 
-/* Bulles de chat GenAI (S'adaptent dynamiquement) */
-.stChatMessage {{ background-color: {CAC} !important; border: 1px solid {BOC} !important; border-radius: 12px !important; }}
+/* Titres de sections */
+h1, h2, h3, h4 {{ color: {TXC} !important; font-weight: 800 !important; }}
+.section-title {{ font-size: 13px; font-weight: 800; color: {TXC}; padding: 10px 0 6px; border-bottom: 2px solid var(--c); margin-bottom: 16px; }}
+
+/* Recommandations RH */
+.recomm {{ 
+    background-color: {GRC}; 
+    border-left: 5px solid var(--c); 
+    border-radius: 0 12px 12px 0; 
+    padding: 16px 20px; 
+    margin: 15px 0; 
+}}
+
+/* Bulles de conversation GenAI */
+.stChatMessage {{ 
+    background-color: {CAC} !important; 
+    border: 1px solid {BOC} !important; 
+    border-radius: 12px !important; 
+}}
+
+/* Style appliqué aux boutons de suggestions de questions GenAI */
+div[data-testid="stHorizontalBlock"] button {{
+    background-color: {CAC} !important;
+    border: 1px solid {BOC} !important;
+    color: {TXC} !important;
+    border-radius: 8px !important;
+    text-align: left !important;
+    font-size: 12px !important;
+}}
 </style>
 """, unsafe_allow_html=True)
 # --- 4. MISE À JOUR DES PARAMÈTRES GRAPHIQUES ---
