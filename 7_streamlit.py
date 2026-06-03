@@ -78,6 +78,14 @@ warnings.filterwarnings("ignore")
 st.set_page_config(page_title="HR Analytics", page_icon="👥",
     layout="wide", initial_sidebar_state="expanded")
 
+# --- COULEURS DE BASE (À laisser tout en haut) ---
+
+VC="#00C896"; RC="#FF4B6E"; BC="#4A9EF5"; OC="#FFD166"
+
+PC="#9B72F5"; OGC="#FF8C42"; FOC="#0F1923"; CAC="#1A2535"
+
+GRC="#243044"; TXC="#E8F0FE"; T2C="#8FA3BF"; GIC="#2A3A50"; BOC="#3A4F6A"
+
 
 # --- 1. INITIALISATION DU MODE D'AFFICHAGE ---
 if "mode_sombre" not in st.session_state:
