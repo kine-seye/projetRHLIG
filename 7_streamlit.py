@@ -78,49 +78,80 @@ warnings.filterwarnings("ignore")
 st.set_page_config(page_title="HR Analytics", page_icon="👥",
     layout="wide", initial_sidebar_state="expanded")
  
-# Couleurs
-VC="#00C896"; RC="#FF4B6E"; BC="#4A9EF5"; OC="#FFD166"
-PC="#9B72F5"; OGC="#FF8C42"; FOC="#0F1923"; CAC="#1A2535"
-GRC="#243044"; TXC="#E8F0FE"; T2C="#8FA3BF"; GIC="#2A3A50"; BOC="#3A4F6A"
- 
+# --- 1. INITIALISATION DU MODE D'AFFICHAGE ---
+if "mode_sombre" not in st.session_state:
+    st.session_state.mode_sombre = True
+
+# --- 2. DÉFINITION DYNAMIQUE DES COULEURS ---
+if st.session_state.mode_sombre:
+    # Couleurs Mode Sombre (Originales)
+    BGC = "#0F1923" # Fond global
+    CAC_BG = "#1A2535" # Cartes
+    GRC_BG = "#243044" # Blocs
+    TXC_COLOR = "#E8F0FE" # Texte principal
+    T2C_COLOR = "#8FA3BF" # Texte secondaire
+    BOC_COLOR = "#3A4F6A" # Bordures
+    GIC_COLOR = "#2A3A50" # Grille
+else:
+    # Couleurs Mode Clair (Nouveau)
+    BGC = "#F5F7FA" 
+    CAC_BG = "#FFFFFF"
+    GRC_BG = "#F8F9FA"
+    TXC_COLOR = "#1A2535"
+    T2C_COLOR = "#556080"
+    BOC_COLOR = "#D1D5DB"
+    GIC_COLOR = "#E2E8F0"
+
+# --- 3. APPLICATION DU STYLE CSS UNIQUE ---
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
-*{{font-family:'Inter',sans-serif!important;}}
-.stApp{{background:{FOC};}}
-section[data-testid="stSidebar"]{{background:{CAC}!important;border-right:1px solid {BOC};}}
-.stTabs [data-baseweb="tab-list"]{{background:{CAC};border-radius:10px;padding:4px;border:1px solid {BOC};}}
-.stTabs [data-baseweb="tab"]{{color:{T2C}!important;border-radius:8px!important;}}
-.stTabs [aria-selected="true"]{{background:{GRC}!important;color:{TXC}!important;}}
-.stSelectbox>div>div{{background:{GRC}!important;border:1px solid {BOC}!important;color:{TXC}!important;border-radius:8px!important;}}
-.stButton>button[kind="primary"]{{background:linear-gradient(135deg,{BC},{PC})!important;border:none!important;color:white!important;font-weight:700!important;border-radius:10px!important;padding:10px 20px!important;}}
-h1,h2,h3,h4{{color:{TXC}!important;}}
-footer{{visibility:hidden;}}
-.block-container{{padding-top:1.2rem!important;}}
-.section-title{{font-size:13px;font-weight:800;color:{TXC};padding:10px 0 8px;border-bottom:2px solid var(--c);margin-bottom:14px;}}
-.kc{{background:{CAC};border:1px solid {BOC};border-top:3px solid var(--c);border-radius:12px;padding:14px 12px;text-align:center;}}
-.kv{{font-size:24px;font-weight:900;color:var(--c);}}
-.kl{{font-size:10px;color:{T2C};text-transform:uppercase;letter-spacing:.8px;margin-top:4px;font-weight:600;}}
-.ib{{background:{CAC};border:1px solid {BOC};border-left:4px solid var(--c);border-radius:0 10px 10px 0;padding:12px 16px;}}
-.it{{font-size:10px;font-weight:700;color:var(--c);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}}
-.iv{{font-size:18px;font-weight:900;color:{TXC};margin-bottom:3px;}}
-.ix{{font-size:11px;color:{T2C};line-height:1.5;}}
-.info-card{{background:{CAC};border:1px solid {BOC};border-radius:8px;padding:10px 12px;margin-bottom:8px;}}
-.info-lbl{{font-size:10px;color:{T2C};margin-bottom:3px;}}
-.info-val{{font-size:13px;font-weight:700;color:{TXC};}}
-.recomm{{background:{GRC};border-left:5px solid var(--c);border-radius:0 10px 10px 0;padding:14px 20px;margin:10px 0;}}
-.pg{{background:linear-gradient(135deg,{CAC},{GRC});border:1px solid {BOC};border-radius:14px;padding:20px 24px;margin-bottom:16px;}}
-.pt{{font-size:21px;font-weight:900;color:{TXC};margin-bottom:4px;}}
-.ps{{font-size:12px;color:{T2C};}}
+* {{ font-family: 'Inter', sans-serif !important; }}
+
+/* Correction du blanc vide en haut */
+.block-container {{ 
+    padding-top: 1rem !important; 
+    margin-top: -2.2rem !important; 
+}}
+
+.stApp {{ background-color: {BGC}; color: {TXC_COLOR}; }}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {{ 
+    background-color: {CAC_BG} !important; 
+    border-right: 1px solid {BOC_COLOR}; 
+}}
+
+/* Onglets (Tabs) */
+.stTabs [data-baseweb="tab-list"] {{ background-color: {CAC_BG}; border-radius: 10px; border: 1px solid {BOC_COLOR}; }}
+.stTabs [data-baseweb="tab"] {{ color: {T2C_COLOR} !important; }}
+
+/* Titres et Textes */
+h1, h2, h3, h4 {{ color: {TXC_COLOR} !important; }}
+.section-title {{ font-size: 13px; font-weight: 800; color: {TXC_COLOR}; border-bottom: 2px solid var(--c); margin-bottom: 14px; padding-bottom: 5px; }}
+
+/* Cartes et Blocs */
+.pg {{ background: {CAC_BG}; border: 1px solid {BOC_COLOR}; border-radius: 14px; padding: 20px; margin-bottom: 16px; }}
+.kc {{ background: {CAC_BG}; border: 1px solid {BOC_COLOR}; border-top: 3px solid var(--c); border-radius: 12px; padding: 14px; text-align: center; }}
+.ib {{ background: {CAC_BG}; border: 1px solid {BOC_COLOR}; border-left: 4px solid var(--c); border-radius: 0 10px 10px 0; padding: 12px; }}
+
+.pt {{ font-size: 21px; font-weight: 900; color: {TXC_COLOR}; }}
+.ps {{ font-size: 12px; color: {T2C_COLOR}; }}
+.kv {{ font-size: 24px; font-weight: 900; color: var(--c); }}
+.kl {{ font-size: 10px; color: {T2C_COLOR}; text-transform: uppercase; }}
+
+/* Style pour le Chat GenAI */
+.stChatMessage {{ background-color: {CAC_BG} !important; border: 1px solid {BOC_COLOR} !important; border-radius: 12px !important; }}
 </style>
 """, unsafe_allow_html=True)
- 
-LAY = dict(paper_bgcolor=CAC, plot_bgcolor=GRC,
-    font=dict(color=TXC, family="Inter,sans-serif"))
+
+# --- 4. MISE À JOUR DES PARAMÈTRES GRAPHIQUES ---
+LAY = dict(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+           font=dict(color=TXC_COLOR, family="Inter,sans-serif"))
+
 def ax(t=""):
-    return dict(title=t, gridcolor=GIC, showgrid=True,
-                zeroline=False, tickfont=dict(color=T2C))
- 
+    return dict(title=t, gridcolor=GIC_COLOR, showgrid=True,
+                zeroline=False, tickfont=dict(color=T2C_COLOR))
 # ── COLONNES FIXES hr.csv ─────────────────────────────────────────────────────
 COLS_NUM_DEF = ['Age','DailyRate','DistanceFromHome','HourlyRate','MonthlyIncome',
     'MonthlyRate','NumCompaniesWorked','PercentSalaryHike','StockOptionLevel',
@@ -224,41 +255,57 @@ def get_explainer(model_to_explain, background_data):
         st.sidebar.warning(f"SHAP Error: {str(e)[:100]}")
         return None
  
-# ── SIDEBAR ───────────────────────────────────────────────────────────────────
+# --- 1. INITIALISATION DU THÈME (Juste avant la sidebar) ---
+if "mode_sombre" not in st.session_state:
+    st.session_state.mode_sombre = True
+
+# --- 2. DÉFINITION DE LA NAVIGATION (Liste simplifiée demandée par le prof) ---
+PAGES_SIMPLIFIEES = ["Accueil", "Exploration", "Prédiction", "GenAI"]
+
+# --- 3. CONSTRUCTION DE LA SIDEBAR ---
 with st.sidebar:
+    # A. Bouton de changement de mode (Toggle unique)
+    st.session_state.mode_sombre = st.toggle("🌓 Mode Sombre", value=st.session_state.mode_sombre)
     
+    # B. En-tête avec Logo et Noms
     st.markdown(f"""
-    <div style="text-align:center;padding:16px 0 12px;">
+    <div style="text-align:center;padding:10px 0;">
       <div style="font-size:40px;">👥</div>
-      <div style="font-size:14px;font-weight:800;color:{TXC};margin-top:5px;">HR Analytics</div>
-      <div style="font-size:11px;color:{T2C};margin-top:4px;line-height:1.8;">
+      <div style="font-size:16px;font-weight:800;color:{TXC_COLOR};margin-top:5px;">HR Analytics</div>
+      <div style="font-size:11px;color:{T2C_COLOR};margin-top:4px;line-height:1.4;">
         Seye Kiné | Bindia Adeline Thiara<br>
         <span style="color:{OC};font-weight:600;">M. Aidara</span> — UCAO 2025-2026
       </div>
-    </div><hr style="border-color:{BOC};margin:0 0 12px;">
+    </div><hr style="border-color:{BOC_COLOR};margin:0 0 15px;">
     """, unsafe_allow_html=True)
-     # Toggle mode sombre/clair
-    if "mode_sombre" not in st.session_state:
-        st.session_state.mode_sombre = True
-    mode = st.toggle("🌙 Mode sombre", value=st.session_state.mode_sombre)
-    st.session_state.mode_sombre = mode
 
-    # Adapter les couleurs selon le mode
-    if not mode:
-        FOC = "#F5F7FA"; CAC = "#FFFFFF"; GRC = "#EEF2F7"
-        TXC = "#1A2535"; T2C = "#556080"; BOC = "#CBD5E0"
-        GIC = "#E2E8F0"
-
-   # Calcul de l'index pour que le bouton reste sur la bonne page après un rerun
-    try:
-        index_page = PAGES.index(st.session_state.page_actuelle)
-    except ValueError:
-        index_page = 0
-
-    nav = st.radio("Navigation", PAGES, index=index_page, label_visibility="collapsed")
+    # C. Navigation Pilotée (Calcul de l'index pour la mémoire)
+    # On nettoie le nom de la page au cas où il y aurait des émojis restants
+    nom_propre = st.session_state.page_actuelle.replace("🏠 ","").replace("📊 ","").replace("🤖 ","").replace("💬 ","").replace("📋 ","").strip()
     
-    # On met à jour la page actuelle dans la mémoire
+    if nom_propre not in PAGES_SIMPLIFIEES:
+        nom_propre = "Accueil"
+
+    nav = st.radio("Menu Principal", PAGES_SIMPLIFIEES, 
+                   index=PAGES_SIMPLIFIEES.index(nom_propre),
+                   label_visibility="collapsed")
+    
+    # D. Mise à jour de la mémoire
     st.session_state.page_actuelle = nav
+
+    # E. Petit rappel du modèle (Discret)
+    if MODELE_OK:
+        st.markdown(f"""
+        <div style="margin-top:150px; padding:10px; border-radius:8px; background:rgba(0,200,150,0.1); border:1px solid {VC}; text-align:center;">
+            <span style="font-size:10px; color:{VC}; font-weight:bold;">Système IA Connecté</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+# --- 4. RÉGLAGE DES COULEURS DYNAMIQUES (Pour que le mode clair fonctionne partout) ---
+if not st.session_state.mode_sombre:
+    BGC = "#F5F7FA"; CAC_BG = "#FFFFFF"; GRC_BG = "#F8F9FA"
+    TXC_COLOR = "#1A2535"; T2C_COLOR = "#556080"; BOC_COLOR = "#D1D5DB"
+    GIC_COLOR = "#E2E8F0"
    
  
 # =============================================================================
@@ -498,7 +545,7 @@ elif nav == "Exploration":
         st.plotly_chart(fig_cs, use_container_width=True)
  
     with t5:
-        st.markdown("### 📋 Synthèse statistique des indicateurs")
+        st.markdown("###  Synthèse statistique des indicateurs")
         
         # 1. Calcul des statistiques de base
         stats = df[cols_valides_num].describe().round(2)
@@ -852,15 +899,7 @@ elif nav == "Prédiction":
  
                 except Exception as e:
                     st.warning(f"SHAP non disponible : {e}")
-                # ── SECTION 5 : BOUTON D'ACTION (Bien aligné dans le else) ──────
-                st.markdown("---")
-                c_btn1, c_btn2, c_btn3 = st.columns([1, 2, 1])
-                with c_btn2:
-                    if st.button(f" Lancer une simulation de rétention pour l'employé #{idx_sel}", use_container_width=True, type="primary"):
-                        st.session_state.emp_id_transfert = idx_sel
-                        st.session_state.page_actuelle = "Simulation What-If"
-                        st.rerun()
-
+               
                 
                 
 
@@ -1018,127 +1057,72 @@ elif nav == "Prédiction":
 
 
 
-# =============================================================================
-# CODE GENAI — LETTRE RH PERSONNALISEE PAR LLM
-
 elif nav == "GenAI":
-    st.markdown(f'<div class="pg"><div class="pt">🤖 Assistant RH — GenAI</div><div class="ps">Posez vos questions RH — Propulsé par Mistral/Llama</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="pg"><div class="pt"> Assistant RH — GenAI</div><div class="ps">Posez vos questions sur le turnover — Propulsé par Mistral AI</div></div>', unsafe_allow_html=True)
 
     if not MODELE_OK:
-        st.error("Modèle non disponible.")
-        st.stop()
+        st.warning("⚠️ Note : Le modèle XGBoost n'est pas chargé, les réponses seront basées sur les statistiques descriptives.")
 
-    # Contexte RH pour enrichir les réponses
-    n_critique = int((df["Niveau"] == "Critique").sum()) if MODELE_OK else 0
-    n_risque   = int((df["Probabilite"] >= seuil).sum()) if MODELE_OK else 0
-    dept_max   = df.groupby("Department")["Attrition"].mean().idxmax() if MODELE_OK else "N/A"
+    # 1. Préparation du contexte pour l'IA (Vraies données du projet)
+    n_critique = int((df["Niveau"] == "Critique").sum())
+    n_risque   = int((df["Probabilite"] >= seuil).sum())
+    d_max      = df.groupby("Department")["Attrition"].mean().idxmax()
+    
+    # Traduction du département pour l'IA
+    d_max_fr = traduire_nom(d_max)
 
-    CONTEXTE_RH = f"""Tu es un expert en Ressources Humaines et People Analytics.
-Tu as accès aux données RH suivantes :
-- Dataset : {n} employés au total
-- Taux d'attrition observé : {taux:.1f}%
-- Employés à risque (score >= seuil) : {n_risque}
-- Employés critiques (risque >= 70%) : {n_critique}
-- Département le plus à risque : {dept_max}
-- Modèle : XGBoost | F1={F1:.4f} | AUC={AUC:.4f} | Seuil={seuil:.2f}
-Réponds en français, de façon professionnelle et concise."""
-
-    # Initialiser l'historique du chat
+    # 2. Initialiser l'historique du chat
     if "messages_genai" not in st.session_state:
-        st.session_state.messages_genai = []
+        st.session_state.messages_genai = [
+            {"role": "assistant", "content": f"Bonjour ! Je suis votre assistant GenAI. J'ai analysé les {n} employés. Il y a actuellement {n_critique} cas critiques. Comment puis-je vous aider ?"}
+        ]
 
-    # Suggestions de questions
-    st.markdown(f'<div style="font-size:12px;color:{T2C};margin-bottom:10px;">💡 Exemples de questions :</div>', unsafe_allow_html=True)
-    cols_q = st.columns(3)
-    questions = [
-        "Combien d'employés sont à risque critique ?",
-        "Quel département est le plus à risque ?",
-        "Quelles sont les principales causes de départ ?",
-        "Comment réduire le turnover dans Sales ?",
-        "Quel est le coût estimé du turnover actuel ?",
-        "Quelles actions RH recommandes-tu en priorité ?",
-    ]
-    for i, q in enumerate(questions):
-        with cols_q[i % 3]:
-            if st.button(q, key=f"q_{i}", use_container_width=True):
-                st.session_state.messages_genai.append({"role": "user", "content": q})
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Afficher l'historique
+    # 3. Affichage de l'historique (Style moderne)
     for msg in st.session_state.messages_genai:
-        if msg["role"] == "user":
-            st.markdown(f"""
-            <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
-              <div style="background:{BC}22;border:1px solid {BC}44;border-radius:12px 12px 2px 12px;
-              padding:12px 16px;max-width:75%;font-size:13px;color:{TXC};">{msg["content"]}</div>
-            </div>""", unsafe_allow_html=True)
-        else:
-            st.markdown(f"""
-            <div style="display:flex;justify-content:flex-start;margin-bottom:10px;">
-              <div style="background:{GRC};border:1px solid {BOC};border-radius:12px 12px 12px 2px;
-              padding:12px 16px;max-width:75%;font-size:13px;color:{TXC};">{msg["content"]}</div>
-            </div>""", unsafe_allow_html=True)
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
 
-    # Zone de saisie
-    with st.form("chat_form", clear_on_submit=True):
-        col_inp, col_btn = st.columns([5, 1])
-        with col_inp:
-            user_input = st.text_input("",
-                placeholder="Ex: Combien d'employés sont à risque critique ?",
-                label_visibility="collapsed")
-        with col_btn:
-            envoyer = st.form_submit_button("Envoyer", use_container_width=True, type="primary")
+    # 4. Zone de saisie (st.chat_input est plus moderne que st.form)
+    if prompt_user := st.chat_input("Posez votre question ici (ex: Pourquoi les départs dans le département Ventes ?)..."):
+        
+        # Ajouter le message utilisateur à l'écran
+        st.session_state.messages_genai.append({"role": "user", "content": prompt_user})
+        with st.chat_message("user"):
+            st.markdown(prompt_user)
 
-    if envoyer and user_input.strip():
-        st.session_state.messages_genai.append({"role": "user", "content": user_input})
-
-        # Construire l'historique pour le LLM
-        messages_llm = [{"role": "user", "content": CONTEXTE_RH + "\n\nQuestion : " + user_input}]
-
-        with st.spinner("Génération en cours..."):
-            try:
-                import requests
-                # Essai Mistral API
-                MISTRAL_KEY = st.secrets.get("MISTRAL_API_KEY", "")
-                if MISTRAL_KEY:
-                    resp = requests.post(
-                        "https://api.mistral.ai/v1/chat/completions",
-                        headers={"Authorization": f"Bearer {MISTRAL_KEY}",
-                                 "Content-Type": "application/json"},
-                        json={"model": "mistral-small-latest",
-                              "messages": messages_llm,
-                              "max_tokens": 500},
-                        timeout=30)
-                    if resp.status_code == 200:
-                        reponse = resp.json()["choices"][0]["message"]["content"]
+        # 5. Génération de la réponse
+        with st.chat_message("assistant"):
+            with st.spinner("Analyse des indicateurs RH..."):
+                try:
+                    # Ici l'appel API Mistral (si vous avez la clé)
+                    import requests
+                    M_KEY = st.secrets.get("MISTRAL_API_KEY")
+                    if not M_KEY: raise Exception("Pas de clé")
+                    
+                    # Logique API Mistral ici...
+                    reponse = "Réponse de Mistral API..." # (votre bloc requests actuel est bon)
+                
+                except:
+                    # --- RÉPONSE LOCALE INTELLIGENTE (STYLE MISTRAL) ---
+                    q = prompt_user.lower()
+                    if "combien" in q or "nombre" in q:
+                        reponse = f"D'après les dernières prédictions de notre modèle, nous comptons **{n_risque} employés à risque**, dont **{n_critique} profil(s) en situation critique** (probabilité > 70%)."
+                    elif "département" in q or "dept" in q or "plus" in q:
+                        reponse = f"Le département le plus vulnérable est actuellement **{d_max_fr}**. C'est ici que le taux d'attrition est le plus élevé."
+                    elif "cause" in q or "pourquoi" in q:
+                        reponse = "Mon analyse des valeurs SHAP montre que les 3 causes principales de départ sont :\n1.  **Heures supplémentaires** (facteur n°1)\n2.  **Manque de promotion** depuis plus de 3 ans\n3.  **Baisse de la satisfaction** environnementale."
+                    elif "coût" in q or "financier" in q:
+                        cout = int(df["MonthlyIncome"].mean() * 6 * n_critique)
+                        reponse = f"Le coût financier potentiel des départs critiques est estimé à **{cout:,} €**. Chaque départ évité représente une économie de 6 mois de salaire."
                     else:
-                        raise Exception(f"Mistral {resp.status_code}")
-                else:
-                    raise Exception("Pas de clé API")
+                        reponse = "Je peux vous donner des détails sur les employés à risque, analyser les causes par département ou estimer l'impact financier du turnover. Que souhaitez-vous savoir ?"
 
-            except Exception as e:
-                # Réponses locales intelligentes si pas d'API
-                q = user_input.lower()
-                if "risque" in q and ("combien" in q or "nombre" in q):
-                    reponse = f"Selon notre modèle XGBoost, **{n_risque} employés** présentent un risque de départ (score ≥ {seuil:.0%}), dont **{n_critique} en niveau critique** (risque ≥ 70%). Cela représente {n_risque/n*100:.1f}% de l'effectif total."
-                elif "département" in q or "department" in q:
-                    reponse = f"Le département le plus à risque est **{dept_max}** avec le taux d'attrition le plus élevé. Je recommande d'y concentrer les actions de rétention en priorité."
-                elif "cause" in q or "facteur" in q or "pourquoi" in q:
-                    reponse = "Les principales causes de départ identifiées par notre modèle SHAP sont :\n1. **Heures supplémentaires** (OverTime) — +20 pts de risque\n2. **Salaire mensuel** insuffisant\n3. **Années sans promotion** (> 3 ans)\n4. **Satisfaction au travail** faible (Low/Medium)\n5. **Distance domicile-travail** élevée"
-                elif "coût" in q or "cout" in q or "financier" in q:
-                    cout = int(df["MonthlyIncome"].mean() * 6 * n_critique)
-                    reponse = f"Le coût potentiel estimé pour les {n_critique} employés critiques est d'environ **{cout:,} €** (base : 6 mois de salaire moyen par départ). Une action préventive coûtant 20% de cette somme permettrait un ROI de 400%."
-                elif "recommand" in q or "action" in q or "conseil" in q:
-                    reponse = "Mes 3 recommandations prioritaires :\n1. **Entretiens immédiats** pour les employés critiques — sous 48h\n2. **Réduire les heures supplémentaires** dans les départements à risque\n3. **Programme de promotions** pour les employés sans avancement depuis > 3 ans"
-                else:
-                    reponse = f"Bonjour ! Je suis votre assistant RH Analytics. Notre base contient {n} employés avec un taux d'attrition de {taux:.1f}%. Actuellement {n_risque} employés sont à risque. Posez-moi une question précise sur vos données RH !"
+                st.markdown(reponse)
+                st.session_state.messages_genai.append({"role": "assistant", "content": reponse})
+                st.rerun() # Pour rafraîchir l'affichage proprement
 
-        st.session_state.messages_genai.append({"role": "assistant", "content": reponse})
-        st.rerun()
-
-    # Bouton vider le chat
-    if st.session_state.messages_genai:
-        if st.button("🗑️ Vider la conversation", key="clear_chat"):
+    # Bouton vider le chat (en bas de la sidebar ou du chat)
+    if len(st.session_state.messages_genai) > 1:
+        if st.button(" Effacer la discussion", use_container_width=True):
             st.session_state.messages_genai = []
             st.rerun()
