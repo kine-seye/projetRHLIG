@@ -266,28 +266,46 @@ if "mode_sombre" not in st.session_state:
     st.session_state.mode_sombre = True
 
 # --- 2. DÉFINITION DE LA NAVIGATION (Liste simplifiée demandée par le prof) ---
-PAGES_SIMPLIFIEES = ["Accueil", "Exploration", "Prédiction", "GenAI"]
+PAGES = ["Accueil", "Exploration", "Prédiction", "GenAI"]
 
 # --- 3. CONSTRUCTION DE LA SIDEBAR ---
+# --- JUSTE AVANT LA SIDEBAR, ON VÉRIFIE LES COULEURS ---
+if st.session_state.mode_sombre:
+    TXC_COLOR = "#E8F0FE"
+    T2C_COLOR = "#8FA3BF"
+    BOC_COLOR = "#3A4F6A"
+else:
+    TXC_COLOR = "#1A2535"
+    T2C_COLOR = "#556080"
+    BOC_COLOR = "#D1D5DB"
+
+# --- LE BLOC SIDEBAR UNIQUE ---
 with st.sidebar:
-    # 1. Le bouton de changement de mode en premier
+    # 1. Le bouton de mode (Jour/Nuit)
     st.session_state.mode_sombre = st.toggle("🌓 Mode Sombre", value=st.session_state.mode_sombre)
     
-    # On définit la couleur du nom du prof selon le mode
-    # En mode sombre on garde l'ocre (OC), en mode clair on peut mettre du bleu (BC)
-    color_prof = OC if st.session_state.mode_sombre else BC
-
     st.markdown(f"""
-    <div style="text-align:center;padding:16px 0 12px;">
+    <div style="text-align:center;padding:10px 0;">
       <div style="font-size:40px;">👥</div>
-      <div style="font-size:16px;font-weight:800;color:{TXC_COLOR};margin-top:5px;">HR Analytics</div>
-      <div style="font-size:11px;color:{T2C_COLOR};margin-top:4px;line-height:1.4;">
-        Seye Kiné | Bindia Adeline Thiara<br>
-        <span style="color:{color_prof};font-weight:600;">M. Aidara</span> — UCAO 2025-2026
-      </div>
-    </div><hr style="border-color:{BOC_COLOR};margin:0 0 15px;">
+      <div style="font-size:16px;font-weight:800;color:{TXC_COLOR};">HR Analytics</div>
+      <div style="font-size:11px;color:{T2C_COLOR};">M. Aidara — UCAO 2025-2026</div>
+    </div><hr style="border-color:{BOC_COLOR};">
     """, unsafe_allow_html=True)
+
+    # 2. LA LIGNE MAGIQUE (Qui définit 'nav')
+    # On calcule l'index pour que la page reste la même après un clic
+    try:
+        idx_p = PAGES.index(st.session_state.page_actuelle)
+    except:
+        idx_p = 0
+
+    # C'est cette ligne qui manquait ou qui était mal placée :
+    nav = st.radio("Menu", PAGES, index=idx_p, label_visibility="collapsed")
     
+    # On enregistre le choix pour la prochaine fois
+    st.session_state.page_actuelle = nav
+
+
 # --- 4. RÉGLAGE DES COULEURS DYNAMIQUES (Pour que le mode clair fonctionne partout) ---
 if not st.session_state.mode_sombre:
     BGC = "#F5F7FA"; CAC_BG = "#FFFFFF"; GRC_BG = "#F8F9FA"
