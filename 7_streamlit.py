@@ -77,6 +77,12 @@ warnings.filterwarnings("ignore")
  
 st.set_page_config(page_title="HR Analytics", page_icon="👥",
     layout="wide", initial_sidebar_state="expanded")
+
+
+# --- COULEURS DE BASE (À laisser tout en haut) ---
+VC="#00C896"; RC="#FF4B6E"; BC="#4A9EF5"; OC="#FFD166"
+PC="#9B72F5"; OGC="#FF8C42"; FOC="#0F1923"; CAC="#1A2535"
+GRC="#243044"; TXC="#E8F0FE"; T2C="#8FA3BF"; GIC="#2A3A50"; BOC="#3A4F6A"
  
 # --- 1. INITIALISATION DU MODE D'AFFICHAGE ---
 if "mode_sombre" not in st.session_state:
@@ -267,40 +273,25 @@ with st.sidebar:
     # A. Bouton de changement de mode (Toggle unique)
     st.session_state.mode_sombre = st.toggle("🌓 Mode Sombre", value=st.session_state.mode_sombre)
     
-    # B. En-tête avec Logo et Noms
+   with st.sidebar:
+    # 1. Le bouton de changement de mode en premier
+    st.session_state.mode_sombre = st.toggle("🌓 Mode Sombre", value=st.session_state.mode_sombre)
+    
+    # On définit la couleur du nom du prof selon le mode
+    # En mode sombre on garde l'ocre (OC), en mode clair on peut mettre du bleu (BC)
+    color_prof = OC if st.session_state.mode_sombre else BC
+
     st.markdown(f"""
-    <div style="text-align:center;padding:10px 0;">
+    <div style="text-align:center;padding:16px 0 12px;">
       <div style="font-size:40px;">👥</div>
       <div style="font-size:16px;font-weight:800;color:{TXC_COLOR};margin-top:5px;">HR Analytics</div>
       <div style="font-size:11px;color:{T2C_COLOR};margin-top:4px;line-height:1.4;">
         Seye Kiné | Bindia Adeline Thiara<br>
-        <span style="color:{OC};font-weight:600;">M. Aidara</span> — UCAO 2025-2026
+        <span style="color:{color_prof};font-weight:600;">M. Aidara</span> — UCAO 2025-2026
       </div>
     </div><hr style="border-color:{BOC_COLOR};margin:0 0 15px;">
     """, unsafe_allow_html=True)
-
-    # C. Navigation Pilotée (Calcul de l'index pour la mémoire)
-    # On nettoie le nom de la page au cas où il y aurait des émojis restants
-    nom_propre = st.session_state.page_actuelle.replace("🏠 ","").replace("📊 ","").replace("🤖 ","").replace("💬 ","").replace("📋 ","").strip()
-    
-    if nom_propre not in PAGES_SIMPLIFIEES:
-        nom_propre = "Accueil"
-
-    nav = st.radio("Menu Principal", PAGES_SIMPLIFIEES, 
-                   index=PAGES_SIMPLIFIEES.index(nom_propre),
-                   label_visibility="collapsed")
-    
-    # D. Mise à jour de la mémoire
-    st.session_state.page_actuelle = nav
-
-    # E. Petit rappel du modèle (Discret)
-    if MODELE_OK:
-        st.markdown(f"""
-        <div style="margin-top:150px; padding:10px; border-radius:8px; background:rgba(0,200,150,0.1); border:1px solid {VC}; text-align:center;">
-            <span style="font-size:10px; color:{VC}; font-weight:bold;">Système IA Connecté</span>
-        </div>
-        """, unsafe_allow_html=True)
-
+       
 # --- 4. RÉGLAGE DES COULEURS DYNAMIQUES (Pour que le mode clair fonctionne partout) ---
 if not st.session_state.mode_sombre:
     BGC = "#F5F7FA"; CAC_BG = "#FFFFFF"; GRC_BG = "#F8F9FA"
