@@ -1199,9 +1199,9 @@ RÈGLES DE RÉPONSE :
 
     # ── Affichage conversation ────────────────────────────────────────────────
     # APRÈS — sans avatars
-        for msg in st.session_state.messages_genai:
-            with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
+    for msg in st.session_state.messages_genai:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
 
     # ── Zone de saisie ────────────────────────────────────────────────────────
     prompt_input = st.chat_input("Posez votre question RH ici...")
