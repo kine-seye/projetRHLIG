@@ -1130,17 +1130,7 @@ elif nav == "GenAI":
     n_risque   = int((df["Probabilite"] >= seuil).sum())
     d_max      = df.groupby("Department")["Attrition"].mean().idxmax()
 
-    m1, m2, m3, m4 = st.columns(4)
-    for col, val, lbl, c in [
-        (m1, f"{n:,}",        "Employés",      BC),
-        (m2, f"{taux:.1f}%",  "Attrition",     RC),
-        (m3, f"{n_critique}", "Critiques 🔴",  RC),
-        (m4, f"{n_risque}",   "À risque",      OC),
-    ]:
-        with col:
-            st.markdown(f'<div class="kc" style="--c:{c};margin-bottom:14px;"><div class="kv">{val}</div><div class="kl">{lbl}</div></div>', unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
+   
 
     # ── Contexte RH envoyé à Mistral ─────────────────────────────────────────
     CONTEXTE_RH = f"""Tu es un expert Senior en Ressources Humaines et People Analytics.
@@ -1198,9 +1188,10 @@ RÈGLES DE RÉPONSE :
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── Affichage conversation ────────────────────────────────────────────────
-    # APRÈS — sans avatars
+   # APRÈS
     for msg in st.session_state.messages_genai:
-        with st.chat_message(msg["role"]):
+        avatar = " "  # espace vide = pas d'avatar
+        with st.chat_message(msg["role"], avatar=avatar):
             st.markdown(msg["content"])
 
     # ── Zone de saisie ────────────────────────────────────────────────────────
@@ -1213,11 +1204,11 @@ RÈGLES DE RÉPONSE :
     if prompt_input:
         # Message utilisateur
         st.session_state.messages_genai.append({"role": "user", "content": prompt_input})
-        with st.chat_message("user"):
+        with st.chat_message("user", avatar=" "):
             st.markdown(prompt_input)
 
         # Réponse assistant
-        with st.chat_message("assistant"):
+        with st.chat_message("assistant", avatar=" "):
             with st.spinner("Analyse en cours..."):
                 reponse     = ""
                 source_info = ""
