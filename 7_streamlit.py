@@ -1167,7 +1167,7 @@ RÈGLES DE RÉPONSE :
             {
                 "role": "assistant",
                 "content": (
-                    f"Bonjour !  Je suis votre **Assistant RH** basé sur l'IA.\n\n"
+                    f"Bonjour ! 👋 Je suis votre **Assistant RH** basé sur l'IA.\n\n"
                     f"J'ai analysé les données de vos **{n:,} employés** :\n"
                     f"- 🔴 **{n_critique} employés critiques** nécessitent une action immédiate\n"
                     f"- ⚠️ **{n_risque} employés** sont à risque de départ\n"
@@ -1181,12 +1181,12 @@ RÈGLES DE RÉPONSE :
     st.markdown(f'<div style="font-size:12px;font-weight:600;color:{T2C};margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">Questions fréquentes</div>', unsafe_allow_html=True)
 
     suggestions = [
-        (" Employés critiques",     "Combien d'employés sont en niveau critique et quelles actions urgentes recommandes-tu ?"),
-        (" Département à risque",   "Quel département est le plus à risque et pourquoi ?"),
-        (" Causes de départ",       "Quelles sont les 5 principales causes de départ selon le modèle SHAP ?"),
-        (" Coût du turnover",        "Quel est le coût financier estimé du turnover actuel ?"),
-        (" Plan de rétention",       "Propose-moi un plan de rétention sur 90 jours pour les employés critiques."),
-        (" Performance du modèle",   "Comment interpréter nos métriques F1 et AUC-ROC ?"),
+        ("🔴 Employés critiques",     "Combien d'employés sont en niveau critique et quelles actions urgentes recommandes-tu ?"),
+        ("🏢 Département à risque",   "Quel département est le plus à risque et pourquoi ?"),
+        ("📋 Causes de départ",       "Quelles sont les 5 principales causes de départ selon le modèle SHAP ?"),
+        ("💰 Coût du turnover",        "Quel est le coût financier estimé du turnover actuel ?"),
+        ("🎯 Plan de rétention",       "Propose-moi un plan de rétention sur 90 jours pour les employés critiques."),
+        ("📈 Performance du modèle",   "Comment interpréter nos métriques F1 et AUC-ROC ?"),
     ]
 
     col_s = st.columns(3)
@@ -1199,7 +1199,7 @@ RÈGLES DE RÉPONSE :
 
     # ── Affichage conversation ────────────────────────────────────────────────
     for msg in st.session_state.messages_genai:
-        avatar = "" if msg["role"] == "assistant" else "👤"
+        avatar = "🤖" if msg["role"] == "assistant" else "👤"
         with st.chat_message(msg["role"], avatar=avatar):
             st.markdown(msg["content"])
 
@@ -1217,7 +1217,7 @@ RÈGLES DE RÉPONSE :
             st.markdown(prompt_input)
 
         # Réponse assistant
-        with st.chat_message("assistant", avatar=""):
+        with st.chat_message("assistant", avatar="🤖"):
             with st.spinner("Analyse en cours..."):
                 reponse     = ""
                 source_info = ""
@@ -1248,7 +1248,7 @@ RÈGLES DE RÉPONSE :
 
                     if resp.status_code == 200:
                         reponse     = resp.json()["choices"][0]["message"]["content"]
-                        source_info = " Mistral AI"
+                        source_info = "✅ Mistral AI"
                     else:
                         raise Exception(f"Erreur {resp.status_code}")
 
@@ -1259,38 +1259,38 @@ RÈGLES DE RÉPONSE :
 
                     if any(x in q for x in ["critique", "urgent", "combien", "nombre", "risque"]):
                         reponse = (
-                            f"###  Situation Critique\n\n"
+                            f"### 🔴 Situation Critique\n\n"
                             f"Notre modèle XGBoost identifie :\n"
                             f"- **{n_critique} employés CRITIQUES** (risque ≥ 70%)\n"
                             f"- **{n_risque} employés à risque** au total (seuil {seuil:.0%})\n"
                             f"- Soit **{n_risque/n*100:.1f}%** de l'effectif\n\n"
                             f"**Actions urgentes :**\n"
-                            f"1.  Planifier des entretiens sous **48h** pour les {n_critique} critiques\n"
-                            f"2.  Préparer des plans de rétention individualisés\n"
+                            f"1. 📅 Planifier des entretiens sous **48h** pour les {n_critique} critiques\n"
+                            f"2. 📋 Préparer des plans de rétention individualisés\n"
                             f"3. 👥 Alerter les managers concernés dès aujourd'hui"
                         )
                     elif any(x in q for x in ["département", "department", "service"]):
                         reponse = (
-                            f"###  Analyse par Département\n\n"
+                            f"### 🏢 Analyse par Département\n\n"
                             f"Le département **{d_max}** est le plus touché.\n\n"
                             f"**Recommandations :**\n"
-                            f"1.  Audit RH spécifique au département {d_max}\n"
-                            f"2.  Focus group avec les employés du département\n"
-                            f"3.  Analyse des heures sup et satisfaction\n"
-                            f"4.  Programme de rétention ciblé sur ce département"
+                            f"1. 🔍 Audit RH spécifique au département {d_max}\n"
+                            f"2. 💬 Focus group avec les employés du département\n"
+                            f"3. 📊 Analyse des heures sup et satisfaction\n"
+                            f"4. 🎯 Programme de rétention ciblé sur ce département"
                         )
                     elif any(x in q for x in ["cause", "facteur", "pourquoi", "raison", "shap"]):
                         reponse = (
-                            f"###  Top 5 Causes de Départ (SHAP)\n\n"
-                            f"1.  **Heures supplémentaires** — +20 pts de risque\n"
+                            f"### 📋 Top 5 Causes de Départ (SHAP)\n\n"
+                            f"1. 🕐 **Heures supplémentaires** — +20 pts de risque\n"
                             f"   → Réduire la charge, limiter les HS à 10%\n\n"
-                            f"2.  **Salaire insuffisant** — fort impact direct\n"
+                            f"2. 💰 **Salaire insuffisant** — fort impact direct\n"
                             f"   → Révision salariale pour les profils à risque\n\n"
-                            f"3.  **Pas de promotion depuis 3+ ans** — démotivation\n"
+                            f"3. 📅 **Pas de promotion depuis 3+ ans** — démotivation\n"
                             f"   → Programme promotion accéléré\n\n"
-                            f"4.  **Satisfaction travail faible** (Low/Medium)\n"
+                            f"4. 😞 **Satisfaction travail faible** (Low/Medium)\n"
                             f"   → Entretiens 1-to-1 réguliers\n\n"
-                            f"5.  **Distance domicile élevée**\n"
+                            f"5. 🏠 **Distance domicile élevée**\n"
                             f"   → Politique télétravail flexible"
                         )
                     elif any(x in q for x in ["coût", "cout", "financier", "argent", "euro", "budget"]):
@@ -1298,7 +1298,7 @@ RÈGLES DE RÉPONSE :
                         cout_action = int(cout_est * 0.15)
                         roi         = int((cout_est - cout_action) / cout_action * 100)
                         reponse = (
-                            f"###  Analyse Financière du Turnover\n\n"
+                            f"### 💰 Analyse Financière du Turnover\n\n"
                             f"**Coût potentiel estimé :**\n"
                             f"- {n_critique} employés critiques × 6 mois de salaire\n"
                             f"- **Total estimé : {cout_est:,} €**\n\n"
@@ -1306,11 +1306,11 @@ RÈGLES DE RÉPONSE :
                             f"- Investissement recommandé : **{cout_action:,} €**\n"
                             f"- Économie potentielle : **{cout_est - cout_action:,} €**\n"
                             f"- ROI estimé : **{roi}%**\n\n"
-                            f" Chaque euro investi en rétention rapporte ~{roi//100}€"
+                            f"💡 Chaque euro investi en rétention rapporte ~{roi//100}€"
                         )
                     elif any(x in q for x in ["plan", "rétention", "retention", "stratégie", "90"]):
                         reponse = (
-                            f"###  Plan de Rétention 90 Jours\n\n"
+                            f"### 🎯 Plan de Rétention 90 Jours\n\n"
                             f"**Phase 1 — Urgence (0-30 jours)**\n"
                             f"- Entretiens immédiats : {n_critique} critiques\n"
                             f"- Suppression heures supplémentaires excessives\n"
@@ -1326,10 +1326,10 @@ RÈGLES DE RÉPONSE :
                         )
                     elif any(x in q for x in ["f1", "auc", "modèle", "performance", "métrique"]):
                         reponse = (
-                            f"###  Performance du Modèle XGBoost\n\n"
+                            f"### 📈 Performance du Modèle XGBoost\n\n"
                             f"**Métriques actuelles :**\n"
                             f"- F1-Score : **{F1:.4f}** (équilibre précision/rappel)\n"
-                            f"- AUC-ROC  : **{AUC:.4f}**  Excellent (> 0.80)\n"
+                            f"- AUC-ROC  : **{AUC:.4f}** ✅ Excellent (> 0.80)\n"
                             f"- Seuil optimal : **{seuil:.2f}**\n\n"
                             f"**Interprétation :**\n"
                             f"- AUC > 0.80 = le modèle discrimine très bien\n"
@@ -1341,14 +1341,14 @@ RÈGLES DE RÉPONSE :
                         )
                     else:
                         reponse = (
-                            f"###  À votre service !\n\n"
+                            f"### 👋 À votre service !\n\n"
                             f"Je peux analyser vos données RH sur ces thèmes :\n\n"
-                            f"-  **Employés critiques** — {n_critique} identifiés\n"
-                            f"-  **Département à risque** — {d_max}\n"
-                            f"-  **Causes de départ** — analyse SHAP\n"
-                            f"-  **Coût du turnover** — impact financier\n"
-                            f"-  **Plan de rétention** — 90 jours\n"
-                            f"-  **Performance modèle** — F1={F1:.4f}\n\n"
+                            f"- 🔴 **Employés critiques** — {n_critique} identifiés\n"
+                            f"- 🏢 **Département à risque** — {d_max}\n"
+                            f"- 📋 **Causes de départ** — analyse SHAP\n"
+                            f"- 💰 **Coût du turnover** — impact financier\n"
+                            f"- 🎯 **Plan de rétention** — 90 jours\n"
+                            f"- 📈 **Performance modèle** — F1={F1:.4f}\n\n"
                             f"Posez votre question !"
                         )
 
@@ -1363,6 +1363,6 @@ RÈGLES DE RÉPONSE :
         st.markdown("<br>", unsafe_allow_html=True)
         _, col_clear, _ = st.columns([3, 2, 3])
         with col_clear:
-            if st.button(" Nouvelle conversation", use_container_width=True, key="clear_chat"):
+            if st.button("🗑️ Nouvelle conversation", use_container_width=True, key="clear_chat"):
                 st.session_state.messages_genai = []
                 st.rerun()
