@@ -8,24 +8,194 @@ import pandas as pd
 import numpy as np
 import pickle, json, warnings
 import plotly.graph_objects as go
-from xgboost import XGBClassifier
 from plotly.subplots import make_subplots
-import xgboost as xgb
-from xgboost import XGBClassifier
+import joblib
 
+warnings.filterwarnings("ignore")
 
+# ── DOIT ÊTRE LA TOUTE PREMIÈRE COMMANDE STREAMLIT ────────────────────────────
+st.set_page_config(
+    page_title="HR Analytics",
+    page_icon="👥",
+    layout="wide",
+    initial_sidebar_state="expanded")
 
+# ── LISTE DES PAGES (simplifiée — demande M. Aidara) ─────────────────────────
+PAGES = ["Accueil", "Exploration", "Prédiction", "GenAI"]
 
+# ── INITIALISATION DU THÈME (une seule fois) ──────────────────────────────────
+if "mode_sombre" not in st.session_state:
+    st.session_state.mode_sombre = True
 
-# Au tout début, après les imports, initialisez la page si elle n'existe pas
-if 'page_actuelle' not in st.session_state:
+if "page_actuelle" not in st.session_state:
     st.session_state.page_actuelle = "Accueil"
-    
-# Liste officielle des pages (à utiliser partout pour éviter les erreurs)
-PAGES = ["Accueil", "Exploration", "Prédiction","GenAI"]
 
+# ── PALETTE FIXE (accents, états — ne changent pas selon le thème) ────────────
+VC  = "#00C896"   # Vert   — Stable / Faible
+RC  = "#FF4B6E"   # Rouge  — Critique / Parti
+BC  = "#4A9EF5"   # Bleu   — Info / Neutre
+OC  = "#FFD166"   # Or     — Seuil / Modéré
+PC  = "#9B72F5"   # Violet — SHAP / GenAI
+OGC = "#FF8C42"   # Orange — Élevé
 
-# Dictionnaire pour traduire les variables techniques en français lisible
+# ── COULEURS DYNAMIQUES SELON LE THÈME ───────────────────────────────────────
+if st.session_state.mode_sombre:
+    FOC = "#0F1923"   # Fond global
+    CAC = "#1A2535"   # Cartes / Sidebar
+    GRC = "#243044"   # Sous-blocs / Graphiques
+    TXC = "#E8F0FE"   # Texte principal
+    T2C = "#8FA3BF"   # Texte secondaire
+    BOC = "#3A4F6A"   # Bordures
+    GIC = "#2A3A50"   # Grille graphiques
+else:
+    FOC = "#F8FAFC"
+    CAC = "#FFFFFF"
+    GRC = "#F1F5F9"
+    TXC = "#0F172A"   # Bleu-noir très sombre
+    T2C = "#475569"   # Gris foncé
+    BOC = "#CBD5E0"
+    GIC = "#E2E8F0"
+
+# ── PARAMÈTRES PLOTLY ─────────────────────────────────────────────────────
+LAY = dict(
+    paper_bgcolor=CAC,
+    plot_bgcolor=GRC,
+    font=dict(color=TXC, family="Inter,sans-serif"))
+
+def ax(t=""):
+    return dict(
+        title=t,
+        gridcolor=GIC,
+        showgrid=True,
+        zeroline=False,
+        tickfont=dict(color=T2C))
+
+# ── CSS GLOBAL ────────────────────────────────────────────────────────────────
+st.markdown(f"""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+* {{ font-family: 'Inter', sans-serif !important; }}
+
+/* Correction espace blanc en haut */
+.block-container {{
+    padding-top: 0.5rem !important;
+    margin-top: -2.5rem !important;
+    padding-bottom: 2rem !important;
+}}
+
+/* Fond global */
+.stApp {{ background-color: {FOC}; }}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {{
+    background-color: {CAC} !important;
+    border-right: 1px solid {BOC};
+}}
+
+/* Onglets */
+.stTabs [data-baseweb="tab-list"] {{
+    background-color: {CAC};
+    border-radius: 10px;
+    padding: 4px;
+    border: 1px solid {BOC};
+}}
+.stTabs [data-baseweb="tab"] {{ color: {T2C} !important; border-radius: 8px !important; }}
+.stTabs [aria-selected="true"] {{ background-color: {GRC} !important; color: {TXC} !important; }}
+
+/* Selectbox / Inputs */
+.stSelectbox>div>div,
+.stTextInput>div>div,
+.stMultiSelect>div>div {{
+    background-color: {GRC} !important;
+    border: 1px solid {BOC} !important;
+    border-radius: 8px !important;
+}}
+div[data-baseweb="select"] div,
+.stSelectbox span,
+input {{ color: {TXC} !important; }}
+svg {{ fill: {T2C} !important; }}
+
+/* Labels */
+div[data-testid="stWidgetLabel"] p {{
+    color: {TXC} !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}}
+
+/* Bouton primaire */
+.stButton>button[kind="primary"] {{
+    background: linear-gradient(135deg, {BC}, {PC}) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+    padding: 10px 20px !important;
+}}
+
+/* Titres */
+h1, h2, h3, h4 {{ color: {TXC} !important; }}
+footer {{ visibility: hidden; }}
+
+/* Composants cartes */
+.pg {{
+    background: {CAC};
+    border: 1px solid {BOC};
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+}}
+.kc {{
+    background: {CAC};
+    border: 1px solid {BOC};
+    border-top: 3px solid var(--c);
+    border-radius: 12px;
+    padding: 14px 12px;
+    text-align: center;
+}}
+.ib {{
+    background: {CAC};
+    border: 1px solid {BOC};
+    border-left: 4px solid var(--c);
+    border-radius: 0 10px 10px 0;
+    padding: 12px 16px;
+}}
+.section-title {{
+    font-size: 13px;
+    font-weight: 800;
+    color: {TXC};
+    padding: 10px 0 8px;
+    border-bottom: 2px solid var(--c);
+    margin-bottom: 14px;
+}}
+.recomm {{
+    background: {GRC};
+    border-left: 5px solid var(--c);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 20px;
+    margin: 10px 0;
+}}
+.pt  {{ font-size: 21px; font-weight: 900; color: {TXC}; margin-bottom: 4px; }}
+.ps  {{ font-size: 12px; color: {T2C}; }}
+.kv  {{ font-size: 24px; font-weight: 900; color: var(--c); }}
+.kl  {{ font-size: 10px; color: {T2C}; text-transform: uppercase; letter-spacing: .8px; margin-top: 4px; font-weight: 600; }}
+.it  {{ font-size: 10px; font-weight: 700; color: var(--c); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }}
+.iv  {{ font-size: 18px; font-weight: 900; color: {TXC}; margin-bottom: 3px; }}
+.ix  {{ font-size: 11px; color: {T2C}; line-height: 1.5; }}
+
+.info-card {{ background: {CAC}; border: 1px solid {BOC}; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }}
+.info-lbl  {{ font-size: 10px; color: {T2C}; margin-bottom: 3px; }}
+.info-val  {{ font-size: 13px; font-weight: 700; color: {TXC}; }}
+
+/* Chat GenAI */
+.stChatMessage {{
+    background-color: {CAC} !important;
+    border: 1px solid {BOC} !important;
+    border-radius: 12px !important;
+}}
+</style>
+""", unsafe_allow_html=True)
+
+# ── TRADUCTION VARIABLES TECHNIQUES ──────────────────────────────────────────
 TRADUCTION_RH = {
     "OverTime": "Heures Supplémentaires",
     "MonthlyIncome": "Salaire Mensuel",
@@ -64,160 +234,11 @@ TRADUCTION_RH = {
 }
 
 def traduire_nom(nom_tech):
-    # On remplace les termes anglais par le français
     nom_clair = str(nom_tech)
     for en, fr in TRADUCTION_RH.items():
         nom_clair = nom_clair.replace(en, fr)
-    
-    # On nettoie les tirets bas (ex: OverTime_Yes -> Heures Supplémentaires_Oui)
     return nom_clair.replace("_", " : ")
 
-
-
-
-
-warnings.filterwarnings("ignore")
-
-# Configuration de la page (Doit être la toute première commande Streamlit)
-st.set_page_config(page_title="HR Analytics", page_icon="👥", layout="wide", initial_sidebar_state="expanded")
-
-# --- 1. CONFIGURATION INITIALE DU THEME ---
-if "mode_sombre" not in st.session_state:
-    st.session_state.mode_sombre = True
-
-# --- 2. PALETTE DE COULEURS FIXES (Accents & États) ---
-VC = "#00C896"   # Vert (Stable/Faible)
-RC = "#FF4B6E"   # Rouge (Parti/Critique)
-BC = "#4A9EF5"   # Bleu (Info/Neutre)
-OC = "#FFD166"   # Jaune/Or (Seuil/Modéré)
-PC = "#9B72F5"   # Violet (SHAP)
-OGC = "#FF8C42"  # Orange (Élevé)
-
-# --- 3. DÉFINITION DYNAMIQUE DU THÈME THÉMATIQUE ---
-if st.session_state.mode_sombre:
-    FOC = "#0F1923"  # Fond global de l'application
-    CAC = "#1A2535"  # Fond des cartes / barre latérale
-    GRC = "#243044"  # Fond des sous-blocs / graphiques
-    TXC = "#E8F0FE"  # Texte principal
-    T2C = "#8FA3BF"  # Texte secondaire
-    BOC = "#3A4F6A"  # Bordures
-    GIC = "#2A3A50"  # Lignes de grille des graphiques
-else:
-    # Couleurs Mode Clair ajustées pour un contraste maximal (Noir sur Blanc)
-    FOC = "#F8FAFC"  
-    CAC = "#FFFFFF"  
-    GRC = "#F1F5F9"  
-    TXC = "#0F172A"  # Un bleu-noir très sombre
-    T2C = "#475569"  # Gris foncé pour les sous-titres
-    BOC = "#CBD5E0"  
-    GIC = "#E2E8F0"  
-
-# --- 4. MISE À JOUR DYNAMIQUE DES DICTIONNAIRES POUR PLOTLY ---
-# On utilise TXC, GRC et CAC car ce sont les noms définis dans votre bloc "if/else"
-LAY = dict(
-    paper_bgcolor=CAC, 
-    plot_bgcolor=GRC, 
-    font=dict(color=TXC, family="Inter,sans-serif") # Correction : TXC au lieu de TXC_COLOR
-)
-
-def ax(t=""):
-    # On utilise GIC et T2C pour correspondre à vos variables
-    return dict(
-        title=t, 
-        gridcolor=GIC, 
-        showgrid=True, 
-        zeroline=False, 
-        tickfont=dict(color=T2C) # Correction : T2C au lieu de T2C_COLOR
-    )
-# --- 5. APPLICATION DU STYLE CSS INJECTÉ ---
-st.markdown(f"""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;600;700;800;900&display=swap');
-* {{ font-family: 'Inter', sans-serif !important; }}
-
-/* Espacement du conteneur principal */
-.block-container {{
-    padding-top: 0.5rem !important; /* Réduit de 1.8 à 0.5 */
-    margin-top: -2.5rem !important; /* Ajoute un décalage négatif pour remonter le titre */
-    padding-bottom: 2rem !important;
-}}
-
-/* Fond de l'application */
-.stApp {{ background-color: {FOC}; }}
-
-/* Barre latérale (Sidebar) */
-section[data-testid="stSidebar"] {{ 
-    background-color: {CAC} !important; 
-    border-right: 1px solid {BOC}; 
-}}
-
-/* Onglets (Tabs) */
-.stTabs [data-baseweb="tab-list"] {{ background-color: {CAC}; border-radius: 10px; padding: 4px; border: 1px solid {BOC}; }}
-.stTabs [data-baseweb="tab"] {{ color: {T2C} !important; border-radius: 8px !important; }}
-.stTabs [aria-selected="true"] {{ background-color: {GRC} !important; color: {TXC} !important; }}
-
-/* =============================================================================
-   🎯 CORRECTION ULTIME DES SÉLECTEURS ET LISTES DÉROULANTES
-   ============================================================================= */
-/* 1. Fond des boîtes de sélection */
-.stSelectbox>div>div, .stTextInput>div>div, .stMultiSelect>div>div {{ 
-    background-color: {GRC} !important; 
-    border: 1px solid {BOC} !important; 
-    border-radius: 8px !important; 
-}}
-
-/* 2. Texte sélectionné à l'intérieur de la boîte (Routage strict de la couleur) */
-div[data-baseweb="select"] div, 
-.stSelectbox div[data-testid="stMarkdownContainer"] p,
-.stSelectbox span, 
-input {{ 
-    color: {TXC} !important; 
-}}
-
-/* 3. Couleur des flèches et petites icônes à droite dans les selectboxes */
-svg {{
-    fill: {T2C} !important;
-}}
-
-/* 4. Libellés (Labels) au-dessus des filtres */
-div[data-testid="stWidgetLabel"] p {{
-    color: {TXC} !important;
-    font-weight: 600 !important;
-    font-size: 13px !important;
-}}
-
-/* =============================================================================
-   📐 COMPOSANTS CARTES ET INDICATEURS
-   ============================================================================= */
-.pg {{ background: {CAC}; border: 1px solid {BOC}; border-radius: 14px; padding: 20px 24px; margin-bottom: 16px; }}
-.kc {{ background: {CAC}; border: 1px solid {BOC}; border-top: 3px solid var(--c); border-radius: 12px; padding: 14px 12px; text-align: center; }}
-.ib {{ background: {CAC}; border: 1px solid {BOC}; border-left: 4px solid var(--c); border-radius: 0 10px 10px 0; padding: 12px 16px; }}
-
-.pt {{ font-size: 21px; font-weight: 900; color: {TXC}; margin-bottom: 4px; }}
-.ps {{ font-size: 12px; color: {T2C}; }}
-.kv {{ font-size: 24px; font-weight: 900; color: var(--c); }}
-.kl {{ font-size: 10px; color: {T2C}; text-transform: uppercase; letter-spacing: .8px; margin-top: 4px; font-weight: 600; }}
-
-/* Fiches d'informations de l'employé */
-.info-card {{ background-color: {CAC}; border: 1px solid {BOC}; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }}
-.info-lbl {{ font-size: 10px; color: {T2C}; margin-bottom: 3px; }}
-.info-val {{ font-size: 13px; font-weight: 700; color: {TXC}; }}
-
-/* Titres */
-h1, h2, h3, h4 {{ color: {TXC} !important; }}
-.section-title {{ font-size: 13px; font-weight: 800; color: {TXC}; padding: 10px 0 8px; border-bottom: 2px solid var(--c); margin-bottom: 14px; }}
-
-/* Bulles de chat GenAI */
-.stChatMessage {{ background-color: {CAC} !important; border: 1px solid {BOC} !important; border-radius: 12px !important; }}
-</style>
-""", unsafe_allow_html=True)
-# --- 4. MISE À JOUR DES PARAMÈTRES GRAPHIQUES ---
-LAY = dict(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-           font=dict(color=TXC_COLOR, family="Inter,sans-serif"))
-
-def ax(t=""):
-    return dict(title=t, gridcolor=GIC_COLOR, showgrid=True,
-                zeroline=False, tickfont=dict(color=T2C_COLOR))
 # ── COLONNES FIXES hr.csv ─────────────────────────────────────────────────────
 COLS_NUM_DEF = ['Age','DailyRate','DistanceFromHome','HourlyRate','MonthlyIncome',
     'MonthlyRate','NumCompaniesWorked','PercentSalaryHike','StockOptionLevel',
@@ -227,151 +248,118 @@ COLS_CAT_DEF = ['BusinessTravel','Department','Education','EducationField',
     'EnvironmentSatisfaction','Gender','JobInvolvement','JobLevel','JobRole',
     'JobSatisfaction','MaritalStatus','OverTime','PerformanceRating',
     'RelationshipSatisfaction','WorkLifeBalance']
- 
-# ── CHARGEMENT ────────────────────────────────────────────────────────────────
+
+# ── CHARGEMENT MODÈLE ET DONNÉES ─────────────────────────────────────────────
 @st.cache_resource
 def charger_modele():
-    import joblib
     try:
-        # On utilise DIRECTEMENT joblib puisque le fichier a été généré avec joblib.dump
         return joblib.load("mon_modele_rh.pkl")
     except Exception as e:
-        st.sidebar.error(f"❌ Erreur critique de lecture Joblib : {str(e)}")
+        st.sidebar.error(f"Erreur chargement modèle : {e}")
         return None
 
 @st.cache_data
 def charger_df():
     df = pd.read_csv("hr.csv")
-    df["Attrition"] = df["Attrition"].map({"Yes":1,"No":0})
+    df["Attrition"] = df["Attrition"].map({"Yes": 1, "No": 0})
     return df
- 
+
 data    = charger_modele()
 df_base = charger_df()
 n       = len(df_base)
-taux    = df_base["Attrition"].mean()*100
- 
-MODELE_OK = False; seuil = 0.31; F1 = 0.4821 ; AUC = 0.8030
+taux    = df_base["Attrition"].mean() * 100
+
+MODELE_OK = False; seuil = 0.31; F1 = 0.4821; AUC = 0.8030
 FEATURES = []; COLS_FINALES = []; modele = None; preprocesseur = None
 
-if data is not None:
+if data is not None and isinstance(data, dict) and "cerveau_ia" in data:
     try:
-        if isinstance(data, dict) and "cerveau_ia" in data:
-            modele        = data.get("cerveau_ia")
-            preprocesseur = data.get("traitement")
-            seuil         = float(data.get("reglage_seuil", 0.31))
-            FEATURES      = list(data.get("features", []))
-            F1            = float(data.get("f1", 0.4821))
-            AUC           = float(data.get("auc", 0.8030))
-            COLS_FINALES  = list(data.get("noms_colonnes", []))
-            
-            if modele is None:
-                raise ValueError("Le modèle extrait est vide ou introuvable.")
-            
-            @st.cache_data
-            def enrichir_reel(_mod, _prep, _feat):
-                d = df_base.copy()
-                X = _prep.transform(d[_feat])
-                d["Probabilite"] = _mod.predict_proba(X)[:, 1]
-                d["Prediction"]  = (d["Probabilite"] >= seuil).astype(int)
-                d["Risque_Pct"]  = (d["Probabilite"] * 100).round(1)
-                d["Niveau"]      = d["Probabilite"].apply(lambda p:
-                    "Critique" if p >= 0.70 else "Eleve" if p >= 0.50
-                    else "Modere" if p >= seuil else "Faible")
-                return d
-            
-            df = enrichir_reel(modele, preprocesseur, FEATURES)
-            MODELE_OK = True
-            st.sidebar.success(f"✅ Vrai modèle chargé ({len(FEATURES)} variables)")
-        else:
-            raise ValueError("Format de fichier non reconnu")
+        modele        = data["cerveau_ia"]
+        preprocesseur = data["traitement"]
+        seuil         = float(data.get("reglage_seuil", 0.31))
+        FEATURES      = list(data.get("features", []))
+        F1            = float(data.get("f1", 0.4821))
+        AUC           = float(data.get("auc", 0.8030))
+        COLS_FINALES  = list(data.get("noms_colonnes", []))
+
+        @st.cache_data
+        def enrichir_reel(_mod, _prep, _feat, _seuil):
+            d = df_base.copy()
+            X = _prep.transform(d[_feat])
+            d["Probabilite"] = _mod.predict_proba(X)[:, 1]
+            d["Prediction"]  = (d["Probabilite"] >= _seuil).astype(int)
+            d["Risque_Pct"]  = (d["Probabilite"] * 100).round(1)
+            d["Niveau"]      = d["Probabilite"].apply(lambda p:
+                "Critique" if p >= 0.70 else "Eleve" if p >= 0.50
+                else "Modere" if p >= _seuil else "Faible")
+            return d
+
+        df = enrichir_reel(modele, preprocesseur, FEATURES, seuil)
+        MODELE_OK = True
 
     except Exception as e:
-        st.sidebar.warning(f"⚠️ Mode Secours activé")
-        st.sidebar.error(f"Détail technique : {str(e)}")
-        MODELE_OK = False  # Sécurité : pas de faux pavé XGBoost si le modèle est en panne
+        st.sidebar.error(f"Erreur modèle : {e}")
+        MODELE_OK = False
 
-# ── INITIALISATION SÉCURISÉE GLOBALE DE DF (Unique et centralisée pour le plan B) ──
-if 'df' not in globals() or df is None:
-    import numpy as np
+# Fallback si modèle absent
+if not MODELE_OK:
     df = df_base.copy()
     np.random.seed(42)
-    base_prob = np.random.beta(2, 5, size=len(df))
-    df["Probabilite"] = np.where(df["Attrition"] == 1, np.minimum(base_prob + 0.4, 0.95), np.maximum(base_prob - 0.1, 0.02))
+    base_prob        = np.random.beta(2, 5, size=len(df))
+    df["Probabilite"] = np.where(df["Attrition"] == 1,
+                                  np.minimum(base_prob + 0.4, 0.95),
+                                  np.maximum(base_prob - 0.1, 0.02))
     df["Prediction"]  = (df["Probabilite"] >= seuil).astype(int)
     df["Risque_Pct"]  = (df["Probabilite"] * 100).round(1)
-    df["Niveau"]      = df["Probabilite"].apply(lambda p: "Critique" if p >= 0.70 else "Eleve" if p >= 0.50 else "Modere" if p >= seuil else "Faible")
+    df["Niveau"]      = df["Probabilite"].apply(lambda p:
+        "Critique" if p >= 0.70 else "Eleve" if p >= 0.50
+        else "Modere" if p >= seuil else "Faible")
 
-# ── SHAP helper ───────────────────────────────────────────────────────────────
+COLS_EDA = [c for c in df.select_dtypes("number").columns
+            if c not in ["Attrition", "Probabilite", "Prediction", "Risque_Pct"]]
+
+# ── SHAP HELPER ───────────────────────────────────────────────────────────────
 def get_explainer(model_to_explain, background_data):
-    """Explainer SHAP universel (plus fiable que TreeExplainer pour XGB 3.x)"""
     try:
         import shap
         if model_to_explain is None:
             return None
-            
-        # On définit la fonction de prédiction
-        f = lambda x: model_to_explain.predict_proba(x)[:, 1]
-        
-        # On utilise l'Explainer générique (Boîte noire)
-        # background_data sont les 50 employés de référence
+        f    = lambda x: model_to_explain.predict_proba(x)[:, 1]
         expl = shap.Explainer(f, background_data)
-        
         return expl
     except Exception as e:
-        st.sidebar.warning(f"SHAP Error: {str(e)[:100]}")
+        st.sidebar.warning(f"SHAP : {str(e)[:80]}")
         return None
- 
-# --- 1. INITIALISATION DU THÈME (Juste avant la sidebar) ---
-if "mode_sombre" not in st.session_state:
-    st.session_state.mode_sombre = True
 
-# --- 2. DÉFINITION DE LA NAVIGATION (Liste simplifiée demandée par le prof) ---
-PAGES = ["Accueil", "Exploration", "Prédiction", "GenAI"]
-
-# --- 3. CONSTRUCTION DE LA SIDEBAR ---
-# --- JUSTE AVANT LA SIDEBAR, ON VÉRIFIE LES COULEURS ---
-if st.session_state.mode_sombre:
-    TXC_COLOR = "#E8F0FE"
-    T2C_COLOR = "#8FA3BF"
-    BOC_COLOR = "#3A4F6A"
-else:
-    TXC_COLOR = "#1A2535"
-    T2C_COLOR = "#556080"
-    BOC_COLOR = "#D1D5DB"
-
-# --- LE BLOC SIDEBAR UNIQUE ---
+# ── SIDEBAR ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    # 1. Le bouton de mode (Jour/Nuit)
-    st.session_state.mode_sombre = st.toggle("🌓 Mode Sombre", value=st.session_state.mode_sombre)
-    
+    # Toggle mode sombre/clair
+    st.session_state.mode_sombre = st.toggle(
+        "🌓 Mode Sombre",
+        value=st.session_state.mode_sombre)
+
     st.markdown(f"""
-    <div style="text-align:center;padding:10px 0;">
+    <div style="text-align:center;padding:12px 0 8px;">
       <div style="font-size:40px;">👥</div>
-      <div style="font-size:16px;font-weight:800;color:{TXC_COLOR};">HR Analytics</div>
-      <div style="font-size:11px;color:{T2C_COLOR};">M. Aidara — UCAO 2025-2026</div>
-    </div><hr style="border-color:{BOC_COLOR};">
+      <div style="font-size:15px;font-weight:800;color:{TXC};">HR Analytics</div>
+      <div style="font-size:11px;color:{T2C};margin-top:4px;line-height:1.6;">
+        Seye Kiné | Bindia Adeline Thiara<br>
+        <span style="color:{OC};font-weight:600;">M. Aidara</span> — UCAO 2025-2026
+      </div>
+    </div>
+    <hr style="border-color:{BOC};margin:8px 0 12px;">
     """, unsafe_allow_html=True)
 
-    # 2. LA LIGNE MAGIQUE (Qui définit 'nav')
-    # On calcule l'index pour que la page reste la même après un clic
+    # Navigation
     try:
         idx_p = PAGES.index(st.session_state.page_actuelle)
-    except:
+    except ValueError:
         idx_p = 0
 
-    # C'est cette ligne qui manquait ou qui était mal placée :
     nav = st.radio("Menu", PAGES, index=idx_p, label_visibility="collapsed")
-    
-    # On enregistre le choix pour la prochaine fois
     st.session_state.page_actuelle = nav
 
 
-# --- 4. RÉGLAGE DES COULEURS DYNAMIQUES (Pour que le mode clair fonctionne partout) ---
-if not st.session_state.mode_sombre:
-    BGC = "#F5F7FA"; CAC_BG = "#FFFFFF"; GRC_BG = "#F8F9FA"
-    TXC_COLOR = "#1A2535"; T2C_COLOR = "#556080"; BOC_COLOR = "#D1D5DB"
-    GIC_COLOR = "#E2E8F0"
-   
  
 # =============================================================================
 # PAGE 1 — ACCUEIL
