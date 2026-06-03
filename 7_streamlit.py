@@ -1197,15 +1197,11 @@ RÈGLES DE RÉPONSE :
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # ── Affichage conversation ────────────────────────────────────────────────
     # APRÈS — sans avatars
         for msg in st.session_state.messages_genai:
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
-
-        # ...
-        with st.chat_message("user"):
-        # ...
-        with st.chat_message("assistant"):
 
     # ── Zone de saisie ────────────────────────────────────────────────────────
     prompt_input = st.chat_input("Posez votre question RH ici...")
@@ -1217,11 +1213,11 @@ RÈGLES DE RÉPONSE :
     if prompt_input:
         # Message utilisateur
         st.session_state.messages_genai.append({"role": "user", "content": prompt_input})
-        with st.chat_message("user", avatar="👤"):
+        with st.chat_message("user"):
             st.markdown(prompt_input)
 
         # Réponse assistant
-        with st.chat_message("assistant", avatar="🤖"):
+        with st.chat_message("assistant"):
             with st.spinner("Analyse en cours..."):
                 reponse     = ""
                 source_info = ""
