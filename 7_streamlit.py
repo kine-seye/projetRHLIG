@@ -79,78 +79,96 @@ st.set_page_config(page_title="HR Analytics", page_icon="👥",
     layout="wide", initial_sidebar_state="expanded")
 
 
-# --- COULEURS DE BASE (À laisser tout en haut) ---
-VC="#00C896"; RC="#FF4B6E"; BC="#4A9EF5"; OC="#FFD166"
-PC="#9B72F5"; OGC="#FF8C42"; FOC="#0F1923"; CAC="#1A2535"
-GRC="#243044"; TXC="#E8F0FE"; T2C="#8FA3BF"; GIC="#2A3A50"; BOC="#3A4F6A"
- 
 # --- 1. INITIALISATION DU MODE D'AFFICHAGE ---
 if "mode_sombre" not in st.session_state:
     st.session_state.mode_sombre = True
 
-# --- 2. DÉFINITION DYNAMIQUE DES COULEURS ---
-if st.session_state.mode_sombre:
-    # Couleurs Mode Sombre (Originales)
-    BGC = "#0F1923" # Fond global
-    CAC_BG = "#1A2535" # Cartes
-    GRC_BG = "#243044" # Blocs
-    TXC_COLOR = "#E8F0FE" # Texte principal
-    T2C_COLOR = "#8FA3BF" # Texte secondaire
-    BOC_COLOR = "#3A4F6A" # Bordures
-    GIC_COLOR = "#2A3A50" # Grille
-else:
-    # Couleurs Mode Clair (Nouveau)
-    BGC = "#F5F7FA" 
-    CAC_BG = "#FFFFFF"
-    GRC_BG = "#F8F9FA"
-    TXC_COLOR = "#1A2535"
-    T2C_COLOR = "#556080"
-    BOC_COLOR = "#D1D5DB"
-    GIC_COLOR = "#E2E8F0"
+# --- 2. COULEURS DE BASE DE LA PALETTE (Status & Accents toujours identiques) ---
+VC = "#00C896"   # Vert (Stable/Faible)
+RC = "#FF4B6E"   # Rouge (Parti/Critique)
+BC = "#4A9EF5"   # Bleu (Info/Neutre)
+OC = "#FFD166"   # Jaune/Or (Seuil/Modéré)
+PC = "#9B72F5"   # Violet (SHAP)
+OGC = "#FF8C42"  # Orange (Élevé)
 
-# --- 3. APPLICATION DU STYLE CSS UNIQUE ---
+# --- 3. DÉFINITION DYNAMIQUE DU THÈME THÉMATIQUE ---
+if st.session_state.mode_sombre:
+    FOC = "#0F1923"  # Fond global de l'application
+    CAC = "#1A2535"  # Fond des cartes / barre latérale
+    GRC = "#243044"  # Fond des sous-blocs / graphiques
+    TXC = "#E8F0FE"  # Texte principal
+    T2C = "#8FA3BF"  # Texte secondaire
+    BOC = "#3A4F6A"  # Bordures
+    GIC = "#2A3A50"  # Lignes de grille des graphiques
+else:
+    # Couleurs Mode Clair ajustées pour garder un excellent contraste
+    FOC = "#F5F7FA"  
+    CAC = "#FFFFFF"  
+    GRC = "#EEF2F7"  
+    TXC = "#1A2535"  
+    T2C = "#556080"  
+    BOC = "#CBD5E0"  
+    GIC = "#E2E8F0"  
+
+# --- 4. MISE À JOUR DYNAMIQUE DES DICTIONNAIRES POUR PLOTLY ---
+# En réassignant ces variables directement, tes fonctions graphiques Plotly (ex: LAY, ax()) 
+# n'auront pas besoin d'être modifiées et s'adapteront tout de suite !
+LAY = dict(paper_bgcolor=CAC, plot_bgcolor=GRC, font=dict(color=TXC, family="Inter,sans-serif"))
+
+def ax(t=""):
+    return dict(title=t, gridcolor=GIC, showgrid=True, zeroline=False, tickfont=dict(color=T2C))
+
+# --- 5. APPLICATION DU STYLE CSS INJECTÉ ---
 st.markdown(f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;600;700;800;900&display=swap');
 * {{ font-family: 'Inter', sans-serif !important; }}
 
-/* Correction du blanc vide en haut */
+/* Nettoyage des espacements du conteneur principal */
 .block-container {{ 
-    padding-top: 1rem !important; 
-    margin-top: -2.2rem !important; 
+    padding-top: 1.2rem !important; 
 }}
 
-.stApp {{ background-color: {BGC}; color: {TXC_COLOR}; }}
+/* Fond de l'application */
+.stApp {{ background-color: {FOC}; }}
 
-/* Sidebar */
+/* Barre latérale (Sidebar) */
 section[data-testid="stSidebar"] {{ 
-    background-color: {CAC_BG} !important; 
-    border-right: 1px solid {BOC_COLOR}; 
+    background-color: {CAC} !important; 
+    border-right: 1px solid {BOC}; 
 }}
 
 /* Onglets (Tabs) */
-.stTabs [data-baseweb="tab-list"] {{ background-color: {CAC_BG}; border-radius: 10px; border: 1px solid {BOC_COLOR}; }}
-.stTabs [data-baseweb="tab"] {{ color: {T2C_COLOR} !important; }}
+.stTabs [data-baseweb="tab-list"] {{ background-color: {CAC}; border-radius: 10px; padding: 4px; border: 1px solid {BOC}; }}
+.stTabs [data-baseweb="tab"] {{ color: {T2C} !important; border-radius: 8px !important; }}
+.stTabs [aria-selected="true"] {{ background-color: {GRC} !important; color: {TXC} !important; }}
 
-/* Titres et Textes */
-h1, h2, h3, h4 {{ color: {TXC_COLOR} !important; }}
-.section-title {{ font-size: 13px; font-weight: 800; color: {TXC_COLOR}; border-bottom: 2px solid var(--c); margin-bottom: 14px; padding-bottom: 5px; }}
+/* Listes déroulantes (Selectbox) */
+.stSelectbox>div>div {{ background-color: {GRC} !important; border: 1px solid {BOC} !important; color: {TXC} !important; border-radius: 8px !important; }}
 
-/* Cartes et Blocs */
-.pg {{ background: {CAC_BG}; border: 1px solid {BOC_COLOR}; border-radius: 14px; padding: 20px; margin-bottom: 16px; }}
-.kc {{ background: {CAC_BG}; border: 1px solid {BOC_COLOR}; border-top: 3px solid var(--c); border-radius: 12px; padding: 14px; text-align: center; }}
-.ib {{ background: {CAC_BG}; border: 1px solid {BOC_COLOR}; border-left: 4px solid var(--c); border-radius: 0 10px 10px 0; padding: 12px; }}
+/* Titres et En-têtes */
+h1, h2, h3, h4 {{ color: {TXC} !important; }}
+.section-title {{ font-size: 13px; font-weight: 800; color: {TXC}; padding: 10px 0 8px; border-bottom: 2px solid var(--c); margin-bottom: 14px; }}
 
-.pt {{ font-size: 21px; font-weight: 900; color: {TXC_COLOR}; }}
-.ps {{ font-size: 12px; color: {T2C_COLOR}; }}
+/* Composants cartes et indicateurs personnalisés */
+.pg {{ background: {CAC}; border: 1px solid {BOC}; border-radius: 14px; padding: 20px 24px; margin-bottom: 16px; }}
+.kc {{ background: {CAC}; border: 1px solid {BOC}; border-top: 3px solid var(--c); border-radius: 12px; padding: 14px 12px; text-align: center; }}
+.ib {{ background: {CAC}; border: 1px solid {BOC}; border-left: 4px solid var(--c); border-radius: 0 10px 10px 0; padding: 12px 16px; }}
+
+.pt {{ font-size: 21px; font-weight: 900; color: {TXC}; margin-bottom: 4px; }}
+.ps {{ font-size: 12px; color: {T2C}; }}
 .kv {{ font-size: 24px; font-weight: 900; color: var(--c); }}
-.kl {{ font-size: 10px; color: {T2C_COLOR}; text-transform: uppercase; }}
+.kl {{ font-size: 10px; color: {T2C}; text-transform: uppercase; letter-spacing: .8px; margin-top: 4px; font-weight: 600; }}
 
-/* Style pour le Chat GenAI */
-.stChatMessage {{ background-color: {CAC_BG} !important; border: 1px solid {BOC_COLOR} !important; border-radius: 12px !important; }}
+/* Cartes d'informations de l'employé */
+.info-card {{ background-color: {CAC}; border: 1px solid {BOC}; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }}
+.info-lbl {{ font-size: 10px; color: {T2C}; margin-bottom: 3px; }}
+.info-val {{ font-size: 13px; font-weight: 700; color: {TXC}; }}
+
+/* Bulles de chat GenAI (S'adaptent dynamiquement) */
+.stChatMessage {{ background-color: {CAC} !important; border: 1px solid {BOC} !important; border-radius: 12px !important; }}
 </style>
 """, unsafe_allow_html=True)
-
 # --- 4. MISE À JOUR DES PARAMÈTRES GRAPHIQUES ---
 LAY = dict(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
            font=dict(color=TXC_COLOR, family="Inter,sans-serif"))
@@ -1062,72 +1080,101 @@ elif nav == "Prédiction":
 
 
 
+# =============================================================================
+# CODE GENAI — CHAT RH INTELLIGENT (MISTRAL AI)
+# =============================================================================
 elif nav == "GenAI":
-    st.markdown(f'<div class="pg"><div class="pt"> Assistant RH — GenAI</div><div class="ps">Posez vos questions sur le turnover — Propulsé par Mistral AI</div></div>', unsafe_allow_html=True)
+    # Titre de la page
+    st.markdown(f'<div class="pg"><div class="pt">💬 Assistant RH — GenAI</div><div class="ps">Analyse conversationnelle propulsée par Mistral AI</div></div>', unsafe_allow_html=True)
 
     if not MODELE_OK:
-        st.warning("⚠️ Note : Le modèle XGBoost n'est pas chargé, les réponses seront basées sur les statistiques descriptives.")
+        st.warning("⚠️ Note : Modèle XGBoost non chargé. Réponses basées sur les statistiques.")
 
-    # 1. Préparation du contexte pour l'IA (Vraies données du projet)
+    # 1. Préparation du contexte (Chiffres réels pour l'IA)
     n_critique = int((df["Niveau"] == "Critique").sum())
     n_risque   = int((df["Probabilite"] >= seuil).sum())
-    d_max      = df.groupby("Department")["Attrition"].mean().idxmax()
+    d_max      = traduire_nom(df.groupby("Department")["Attrition"].mean().idxmax())
     
-    # Traduction du département pour l'IA
-    d_max_fr = traduire_nom(d_max)
+    # Texte de contexte envoyé à Mistral en arrière-plan
+    CONTEXTE_RH = f"""Tu es un expert RH. Voici les données de l'entreprise :
+    - {n} employés au total.
+    - Taux d'attrition : {taux:.1f}%.
+    - {n_risque} employés sont à risque, dont {n_critique} en niveau CRITIQUE.
+    - Le département le plus touché est {d_max}.
+    - Tu dois répondre de façon pro, brève et en français."""
 
-    # 2. Initialiser l'historique du chat
+    # 2. Gestion de l'historique du Chat
     if "messages_genai" not in st.session_state:
         st.session_state.messages_genai = [
-            {"role": "assistant", "content": f"Bonjour ! Je suis votre assistant GenAI. J'ai analysé les {n} employés. Il y a actuellement {n_critique} cas critiques. Comment puis-je vous aider ?"}
+            {"role": "assistant", "content": "Bonjour ! Je suis votre assistant expert. Comment puis-je vous aider à analyser le turnover aujourd'hui ?"}
         ]
 
-    # 3. Affichage de l'historique (Style moderne)
+    # 3. Suggestions de questions (Pour la démo)
+    st.markdown(f'<div style="font-size:12px;color:{T2C_COLOR};margin-bottom:5px;">💡 Suggestions :</div>', unsafe_allow_html=True)
+    c1, c2, c3 = st.columns(3)
+    with c1: 
+        if st.button("Combien de critiques ?", use_container_width=True): st.session_state.chat_trigger = "Combien d'employés sont à risque critique ?"
+    with c2: 
+        if st.button("Département à risque ?", use_container_width=True): st.session_state.chat_trigger = "Quel est le département le plus touché ?"
+    with c3: 
+        if st.button("Causes de départ ?", use_container_width=True): st.session_state.chat_trigger = "Quelles sont les causes majeures de départ ?"
+
+    # 4. Affichage de la discussion
     for msg in st.session_state.messages_genai:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # 4. Zone de saisie (st.chat_input est plus moderne que st.form)
-    if prompt_user := st.chat_input("Posez votre question ici (ex: Pourquoi les départs dans le département Ventes ?)..."):
-        
-        # Ajouter le message utilisateur à l'écran
-        st.session_state.messages_genai.append({"role": "user", "content": prompt_user})
-        with st.chat_message("user"):
-            st.markdown(prompt_user)
+    # 5. Zone de saisie (Chat Input)
+    # On vérifie si un bouton de suggestion a été cliqué
+    prompt_input = st.chat_input("Posez votre question ici...")
+    if st.session_state.get('chat_trigger'):
+        prompt_input = st.session_state.chat_trigger
+        del st.session_state.chat_trigger
 
-        # 5. Génération de la réponse
+    if prompt_input:
+        # Afficher le message utilisateur
+        st.session_state.messages_genai.append({"role": "user", "content": prompt_input})
+        with st.chat_message("user"):
+            st.markdown(prompt_input)
+
+        # Générer la réponse
         with st.chat_message("assistant"):
-            with st.spinner("Analyse des indicateurs RH..."):
+            with st.spinner("Mistral AI analyse les données..."):
                 try:
-                    # Ici l'appel API Mistral (si vous avez la clé)
                     import requests
                     M_KEY = st.secrets.get("MISTRAL_API_KEY")
-                    if not M_KEY: raise Exception("Pas de clé")
                     
-                    # Logique API Mistral ici...
-                    reponse = "Réponse de Mistral API..." # (votre bloc requests actuel est bon)
-                
-                except:
-                    # --- RÉPONSE LOCALE INTELLIGENTE (STYLE MISTRAL) ---
-                    q = prompt_user.lower()
-                    if "combien" in q or "nombre" in q:
-                        reponse = f"D'après les dernières prédictions de notre modèle, nous comptons **{n_risque} employés à risque**, dont **{n_critique} profil(s) en situation critique** (probabilité > 70%)."
-                    elif "département" in q or "dept" in q or "plus" in q:
-                        reponse = f"Le département le plus vulnérable est actuellement **{d_max_fr}**. C'est ici que le taux d'attrition est le plus élevé."
-                    elif "cause" in q or "pourquoi" in q:
-                        reponse = "Mon analyse des valeurs SHAP montre que les 3 causes principales de départ sont :\n1.  **Heures supplémentaires** (facteur n°1)\n2.  **Manque de promotion** depuis plus de 3 ans\n3.  **Baisse de la satisfaction** environnementale."
-                    elif "coût" in q or "financier" in q:
-                        cout = int(df["MonthlyIncome"].mean() * 6 * n_critique)
-                        reponse = f"Le coût financier potentiel des départs critiques est estimé à **{cout:,} €**. Chaque départ évité représente une économie de 6 mois de salaire."
+                    if M_KEY:
+                        # --- APPEL VRAI MISTRAL ---
+                        resp = requests.post(
+                            "https://api.mistral.ai/v1/chat/completions",
+                            headers={"Authorization": f"Bearer {M_KEY}", "Content-Type": "application/json"},
+                            json={
+                                "model": "mistral-small-latest",
+                                "messages": [{"role": "system", "content": CONTEXTE_RH}, 
+                                             {"role": "user", "content": prompt_input}]
+                            }, timeout=30)
+                        reponse = resp.json()["choices"][0]["message"]["content"]
+                        source_info = "✅ Mistral AI"
                     else:
-                        reponse = "Je peux vous donner des détails sur les employés à risque, analyser les causes par département ou estimer l'impact financier du turnover. Que souhaitez-vous savoir ?"
+                        raise Exception("Pas de clé")
+
+                except Exception:
+                    # --- RÉPONSE LOCALE (SI PAS D'API) ---
+                    source_info = "⚠️ Analyse locale"
+                    q = prompt_input.lower()
+                    if "combien" in q:
+                        reponse = f"Le modèle identifie **{n_critique} employés** en situation critique."
+                    elif "département" in q:
+                        reponse = f"C'est le département **{d_max}** qui présente le plus de risques."
+                    else:
+                        reponse = "Je vois que les **heures supplémentaires** sont le facteur n°1 de départ dans vos données."
 
                 st.markdown(reponse)
+                st.caption(f"Source : {source_info}")
                 st.session_state.messages_genai.append({"role": "assistant", "content": reponse})
-                st.rerun() # Pour rafraîchir l'affichage proprement
+                st.rerun()
 
-    # Bouton vider le chat (en bas de la sidebar ou du chat)
+    # Bouton pour vider
     if len(st.session_state.messages_genai) > 1:
-        if st.button(" Effacer la discussion", use_container_width=True):
-            st.session_state.messages_genai = []
-            st.rerun()
+        st.button("🗑️ Effacer la discussion", on_click=lambda: st.session_state.update({"messages_genai": []}))
