@@ -125,8 +125,9 @@ st.markdown(f"""
 * {{ font-family: 'Inter', sans-serif !important; }}
 
 /* Espacement du conteneur principal */
-.block-container {{ 
-    padding-top: 1.8rem !important; 
+.block-container {{
+    padding-top: 0.5rem !important; /* Réduit de 1.8 à 0.5 */
+    margin-top: -2.5rem !important; /* Ajoute un décalage négatif pour remonter le titre */
     padding-bottom: 2rem !important;
 }}
 
