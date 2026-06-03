@@ -74,7 +74,7 @@ def traduire_nom(nom_tech):
 
 
 
-import warnings
+
 
 warnings.filterwarnings("ignore")
 
