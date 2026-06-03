@@ -113,11 +113,22 @@ else:
     GIC = "#E2E8F0"  
 
 # --- 4. MISE À JOUR DYNAMIQUE DES DICTIONNAIRES POUR PLOTLY ---
-LAY = dict(paper_bgcolor=CAC, plot_bgcolor=GRC, font=dict(color=TXC, family="Inter,sans-serif"))
+# On utilise TXC, GRC et CAC car ce sont les noms définis dans votre bloc "if/else"
+LAY = dict(
+    paper_bgcolor=CAC, 
+    plot_bgcolor=GRC, 
+    font=dict(color=TXC, family="Inter,sans-serif") # Correction : TXC au lieu de TXC_COLOR
+)
 
 def ax(t=""):
-    return dict(title=t, gridcolor=GIC, showgrid=True, zeroline=False, tickfont=dict(color=T2C))
-
+    # On utilise GIC et T2C pour correspondre à vos variables
+    return dict(
+        title=t, 
+        gridcolor=GIC, 
+        showgrid=True, 
+        zeroline=False, 
+        tickfont=dict(color=T2C) # Correction : T2C au lieu de T2C_COLOR
+    )
 # --- 5. APPLICATION DU STYLE CSS INJECTÉ ---
 st.markdown(f"""
 <style>
