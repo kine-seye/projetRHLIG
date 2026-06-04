@@ -54,6 +54,7 @@ VC = "#00C896"; RC = "#FF4B6E"; BC = "#4A9EF5"; OC = "#FFD166"
 PC = "#9B72F5"; OGC = "#FF8C42"
 
 # ── Paramètres Plotly ─────────────────────────────────────────────────────────
+# Remplacez votre LAY et ax() par ceci
 LAY = dict(
     paper_bgcolor=CAC,
     plot_bgcolor=GRC,
@@ -62,17 +63,17 @@ LAY = dict(
         bgcolor=CAC,
         bordercolor=BOC,
         borderwidth=1,
-        font=dict(color=TXC)   # ← Ajouter cette ligne
-    ))
+        font=dict(color=TXC)))
 
 def ax(t=""):
     return dict(
-        title=t,
+        title=dict(text=t, font=dict(color=TXC)),  # ← titre axe
         gridcolor=GIC,
         showgrid=True,
         zeroline=False,
-        tickfont=dict(color=T2C))
-
+        tickfont=dict(color=TXC),   # ← TXC au lieu de T2C
+        linecolor=BOC,
+        showline=True)
 # ── CSS Global — appliqué avec les bonnes couleurs du thème ───────────────────
 st.markdown(f"""
 <style>
@@ -642,7 +643,7 @@ elif nav == "Exploration":
             texttemplate="%{text}", textfont=dict(size=16,color="white"),
             colorscale=[[0,VC],[0.4,OC],[0.7,OGC],[1,RC]],
             zmid=taux, zmin=5, zmax=45,
-            colorbar=dict(title="Taux %",tickfont=dict(color=T2C))))
+            colorbar=dict(title="Taux %",tickfont=dict(color=TXC))))
         fig_hm.update_layout(**LAY,
             title=dict(text="Analyse Croisée : Satisfaction x Heures Supplémentaires",font=dict(size=14),x=0.5),
             height=420, margin=dict(t=55,b=70,l=130,r=40))
@@ -674,7 +675,7 @@ elif nav == "Exploration":
             text=[[f"<b>{v:.1f}%</b>" for v in row] for row in wm_u.values],
             texttemplate="%{text}", textfont=dict(size=16,color="white"),
             colorscale=[[0,VC],[0.4,OC],[0.7,OGC],[1,RC]],
-            zmid=taux, colorbar=dict(title="Taux %",tickfont=dict(color=T2C))))
+            zmid=taux, colorbar=dict(title="Taux %",tickfont=dict(color=TXC))))
         fig_wm.update_layout(**LAY,
             title=dict(text="Croisement : WLB × Statut Matrimonial",font=dict(size=14),x=0.5),
             height=400, margin=dict(t=55,b=60,l=130,r=40))
