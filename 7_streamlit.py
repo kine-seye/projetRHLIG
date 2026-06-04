@@ -1268,133 +1268,188 @@ elif nav == "Prédiction":
 # =============================================================================
 # PAGE GENAI — CHAT RH INTELLIGENT ET MODERNE
 # =============================================================================
+# =============================================================================
+# PAGE GENAI — CHAT RH AVEC HISTORIQUE MULTIPLE CONVERSATIONS
+# =============================================================================
 elif nav == "GenAI":
-    st.markdown(f'<div class="pg"><div class="pt"> Assistant RH — GenAI</div><div class="ps">Posez vos questions RH — Propulsé par Mistral/Llama</div></div>', unsafe_allow_html=True)
 
-    if not MODELE_OK:
-        st.error("Modèle non disponible.")
-        st.stop()
+    st.markdown(f'<div class="pg"><div class="pt">🤖 Assistant RH — GenAI</div><div class="ps">Posez vos questions RH — Propulsé par Mistral AI</div></div>', unsafe_allow_html=True)
 
-    # Contexte RH pour enrichir les réponses
-    n_critique = int((df["Niveau"] == "Critique").sum()) if MODELE_OK else 0
-    n_risque   = int((df["Probabilite"] >= seuil).sum()) if MODELE_OK else 0
-    dept_max   = df.groupby("Department")["Attrition"].mean().idxmax() if MODELE_OK else "N/A"
+    # ── Données RH pour le contexte ──────────────────────────────────────────
+    n_critique = int((df["Niveau"] == "Critique").sum())
+    n_risque   = int((df["Probabilite"] >= seuil).sum())
+    dept_max   = df.groupby("Department")["Attrition"].mean().idxmax()
 
-    CONTEXTE_RH = f"""Tu es un expert en Ressources Humaines et People Analytics.
-Tu as accès aux données RH suivantes :
-- Dataset : {n} employés au total
-- Taux d'attrition observé : {taux:.1f}%
-- Employés à risque (score >= seuil) : {n_risque}
-- Employés critiques (risque >= 70%) : {n_critique}
-- Département le plus à risque : {dept_max}
-- Modèle : XGBoost | F1={F1:.4f} | AUC={AUC:.4f} | Seuil={seuil:.2f}
+    CONTEXTE_RH = f"""Tu es un expert RH. Données de l'entreprise :
+- {n} employés | Attrition : {taux:.1f}% | {n_risque} à risque | {n_critique} critiques
+- Département le plus touché : {dept_max}
+- Modèle XGBoost : F1={F1:.4f} | AUC={AUC:.4f}
 Réponds en français, de façon professionnelle et concise."""
 
-    # Initialiser l'historique du chat
-    if "messages_genai" not in st.session_state:
-        st.session_state.messages_genai = []
+    # ── Initialisation de la structure des conversations ─────────────────────
+    if "conversations" not in st.session_state:
+        st.session_state.conversations = {
+            "Conversation 1": [
+                {"role": "assistant", "content": f"Bonjour ! 👋 Je suis votre **Assistant RH**. J'ai analysé les données de vos **{n:,} employés** — **{n_critique} sont en niveau critique**. Comment puis-je vous aider ?"}
+            ]
+        }
+    if "conv_active" not in st.session_state:
+        st.session_state.conv_active = "Conversation 1"
+    if "conv_counter" not in st.session_state:
+        st.session_state.conv_counter = 1
 
-    # Suggestions de questions
-    st.markdown(f'<div style="font-size:12px;color:{T2C};margin-bottom:10px;"> Exemples de questions :</div>', unsafe_allow_html=True)
-    cols_q = st.columns(3)
-    questions = [
-        "Combien d'employés sont à risque critique ?",
-        "Quel département est le plus à risque ?",
-        "Quelles sont les principales causes de départ ?",
-        "Comment réduire le turnover dans Sales ?",
-        "Quel est le coût estimé du turnover actuel ?",
-        "Quelles actions RH recommandes-tu en priorité ?",
-    ]
-    for i, q in enumerate(questions):
-        with cols_q[i % 3]:
-            if st.button(q, key=f"q_{i}", use_container_width=True):
-                st.session_state.messages_genai.append({"role": "user", "content": q})
+    # ── SIDEBAR CONVERSATIONS ────────────────────────────────────────────────
+    with st.sidebar:
+        st.markdown(f'<hr style="border-color:{BOC};margin:10px 0;">', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size:11px;font-weight:700;color:{T2C};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">💬 Conversations</div>', unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+        # Bouton nouvelle conversation
+        if st.button("✏️ Nouvelle conversation", use_container_width=True, key="new_conv"):
+            st.session_state.conv_counter += 1
+            new_name = f"Conversation {st.session_state.conv_counter}"
+            st.session_state.conversations[new_name] = [
+                {"role": "assistant", "content": f"Bonjour ! 👋 Nouvelle conversation démarrée. Comment puis-je vous aider ?"}
+            ]
+            st.session_state.conv_active = new_name
+            st.rerun()
 
-    # Afficher l'historique
-    for msg in st.session_state.messages_genai:
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # Liste des conversations existantes
+        for nom_conv in list(st.session_state.conversations.keys()):
+            # Récupérer le premier message user comme titre
+            messages_conv = st.session_state.conversations[nom_conv]
+            user_msgs = [m for m in messages_conv if m["role"] == "user"]
+            titre_conv = user_msgs[0]["content"][:28] + "..." if user_msgs else nom_conv
+
+            is_active = (nom_conv == st.session_state.conv_active)
+            bg_color  = GRC if is_active else "transparent"
+            border    = f"1px solid {BC}" if is_active else f"1px solid transparent"
+
+            col_conv, col_del = st.columns([5, 1])
+            with col_conv:
+                if st.button(
+                    f"{'🔵' if is_active else '⚪'} {titre_conv}",
+                    key=f"conv_{nom_conv}",
+                    use_container_width=True):
+                    st.session_state.conv_active = nom_conv
+                    st.rerun()
+            with col_del:
+                if len(st.session_state.conversations) > 1:
+                    if st.button("🗑️", key=f"del_{nom_conv}"):
+                        del st.session_state.conversations[nom_conv]
+                        # Sélectionner la première conversation restante
+                        st.session_state.conv_active = list(st.session_state.conversations.keys())[0]
+                        st.rerun()
+
+    # ── CONVERSATION ACTIVE ──────────────────────────────────────────────────
+    messages_actifs = st.session_state.conversations[st.session_state.conv_active]
+
+    # Titre de la conversation active
+    st.markdown(f'<div style="font-size:12px;font-weight:600;color:{T2C};margin-bottom:12px;">📂 {st.session_state.conv_active}</div>', unsafe_allow_html=True)
+
+    # ── Suggestions de questions ──────────────────────────────────────────────
+    if len([m for m in messages_actifs if m["role"] == "user"]) == 0:
+        st.markdown(f'<div style="font-size:12px;color:{T2C};margin-bottom:8px;">💡 Exemples de questions :</div>', unsafe_allow_html=True)
+        questions = [
+            "Combien d'employés sont à risque critique ?",
+            "Quel département est le plus à risque ?",
+            "Quelles sont les principales causes de départ ?",
+            "Comment réduire le turnover dans Sales ?",
+            "Quel est le coût estimé du turnover actuel ?",
+            "Quelles actions RH recommandes-tu en priorité ?",
+        ]
+        cols_q = st.columns(3)
+        for i, q in enumerate(questions):
+            with cols_q[i % 3]:
+                if st.button(q, key=f"q_{i}_{st.session_state.conv_active}", use_container_width=True):
+                    messages_actifs.append({"role": "user", "content": q})
+                    st.session_state.conversations[st.session_state.conv_active] = messages_actifs
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+    # ── Affichage de l'historique de la conversation active ──────────────────
+    for msg in messages_actifs:
         if msg["role"] == "user":
             st.markdown(f"""
             <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
-              <div style="background:{BC}22;border:1px solid {BC}44;border-radius:12px 12px 2px 12px;
-              padding:12px 16px;max-width:75%;font-size:13px;color:{TXC};">{msg["content"]}</div>
+              <div style="background:{BC}22;border:1px solid {BC}44;
+              border-radius:12px 12px 2px 12px;padding:12px 16px;
+              max-width:75%;font-size:13px;color:{TXC};">
+                {msg["content"]}
+              </div>
             </div>""", unsafe_allow_html=True)
         else:
             st.markdown(f"""
             <div style="display:flex;justify-content:flex-start;margin-bottom:10px;">
-              <div style="background:{GRC};border:1px solid {BOC};border-radius:12px 12px 12px 2px;
-              padding:12px 16px;max-width:75%;font-size:13px;color:{TXC};">{msg["content"]}</div>
+              <div style="background:{GRC};border:1px solid {BOC};
+              border-radius:12px 12px 12px 2px;padding:12px 16px;
+              max-width:75%;font-size:13px;color:{TXC};">
+                {msg["content"]}
+              </div>
             </div>""", unsafe_allow_html=True)
 
-
-    # 2. Historique AVANT le formulaire
-    for msg in st.session_state.messages_genai:
-        if msg["role"] == "user":
-            st.markdown(f'<div style="...justify-content:flex-end...">{msg["content"]}</div>', unsafe_allow_html=True)
-        else:
-            st.markdown(f'<div style="...justify-content:flex-start...">{msg["content"]}</div>', unsafe_allow_html=True)
-
-
-    # Zone de saisie
-    with st.form("chat_form", clear_on_submit=True):
+    # ── Zone de saisie ────────────────────────────────────────────────────────
+    with st.form(f"chat_form_{st.session_state.conv_active}", clear_on_submit=True):
         col_inp, col_btn = st.columns([5, 1])
         with col_inp:
             user_input = st.text_input("",
-                placeholder="Demande une question .......",
+                placeholder="Posez votre question RH ici...",
                 label_visibility="collapsed")
         with col_btn:
             envoyer = st.form_submit_button("Envoyer", use_container_width=True, type="primary")
 
     if envoyer and user_input.strip():
-        st.session_state.messages_genai.append({"role": "user", "content": user_input})
+        # Ajouter le message utilisateur
+        messages_actifs.append({"role": "user", "content": user_input})
 
-        # Construire l'historique pour le LLM
-        messages_llm = [{"role": "user", "content": CONTEXTE_RH + "\n\nQuestion : " + user_input}]
-
-        with st.spinner("Génération en cours..."):
+        # Générer la réponse
+        with st.spinner("Analyse en cours..."):
             try:
                 import requests
-                # Essai Mistral API
                 MISTRAL_KEY = st.secrets.get("MISTRAL_API_KEY", "")
-                if MISTRAL_KEY:
-                    resp = requests.post(
-                        "https://api.mistral.ai/v1/chat/completions",
-                        headers={"Authorization": f"Bearer {MISTRAL_KEY}",
-                                 "Content-Type": "application/json"},
-                        json={"model": "mistral-small-latest",
-                              "messages": messages_llm,
-                              "max_tokens": 500},
-                        timeout=30)
-                    if resp.status_code == 200:
-                        reponse = resp.json()["choices"][0]["message"]["content"]
-                    else:
-                        raise Exception(f"Mistral {resp.status_code}")
-                else:
-                    raise Exception("Pas de clé API")
+                if not MISTRAL_KEY:
+                    raise Exception("Pas de clé")
 
-            except Exception as e:
-                # Réponses locales intelligentes si pas d'API
+                resp = requests.post(
+                    "https://api.mistral.ai/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {MISTRAL_KEY}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "mistral-small-latest",
+                        "messages": [
+                            {"role": "system", "content": CONTEXTE_RH},
+                            {"role": "user",   "content": user_input}
+                        ],
+                        "max_tokens": 500,
+                        "temperature": 0.7
+                    },
+                    timeout=30)
+
+                if resp.status_code == 200:
+                    reponse = resp.json()["choices"][0]["message"]["content"]
+                else:
+                    raise Exception(f"Erreur {resp.status_code}")
+
+            except Exception:
                 q = user_input.lower()
-                if "risque" in q and ("combien" in q or "nombre" in q):
-                    reponse = f"Selon notre modèle XGBoost, **{n_risque} employés** présentent un risque de départ (score ≥ {seuil:.0%}), dont **{n_critique} en niveau critique** (risque ≥ 70%). Cela représente {n_risque/n*100:.1f}% de l'effectif total."
-                elif "département" in q or "department" in q:
-                    reponse = f"Le département le plus à risque est **{dept_max}** avec le taux d'attrition le plus élevé. Je recommande d'y concentrer les actions de rétention en priorité."
-                elif "cause" in q or "facteur" in q or "pourquoi" in q:
-                    reponse = "Les principales causes de départ identifiées par notre modèle SHAP sont :\n1. **Heures supplémentaires** (OverTime) — +20 pts de risque\n2. **Salaire mensuel** insuffisant\n3. **Années sans promotion** (> 3 ans)\n4. **Satisfaction au travail** faible (Low/Medium)\n5. **Distance domicile-travail** élevée"
-                elif "coût" in q or "cout" in q or "financier" in q:
+                if any(x in q for x in ["critique", "combien", "risque", "nombre"]):
+                    reponse = f"Notre modèle identifie **{n_critique} employés critiques** (risque ≥ 70%) et **{n_risque} à risque** au total ({n_risque/n*100:.1f}% de l'effectif)."
+                elif any(x in q for x in ["département", "department"]):
+                    reponse = f"Le département **{dept_max}** est le plus touché. Je recommande d'y concentrer les actions de rétention en priorité."
+                elif any(x in q for x in ["cause", "facteur", "pourquoi"]):
+                    reponse = "**Top 5 causes** (SHAP) :\n1.  Heures supplémentaires\n2.  Salaire insuffisant\n3.  Pas de promotion depuis 3+ ans\n4.  Satisfaction faible\n5.  Distance domicile élevée"
+                elif any(x in q for x in ["coût", "cout", "financier"]):
                     cout = int(df["MonthlyIncome"].mean() * 6 * n_critique)
-                    reponse = f"Le coût potentiel estimé pour les {n_critique} employés critiques est d'environ **{cout:,} €** (base : 6 mois de salaire moyen par départ). Une action préventive coûtant 20% de cette somme permettrait un ROI de 400%."
-                elif "recommand" in q or "action" in q or "conseil" in q:
-                    reponse = "Mes 3 recommandations prioritaires :\n1. **Entretiens immédiats** pour les employés critiques — sous 48h\n2. **Réduire les heures supplémentaires** dans les départements à risque\n3. **Programme de promotions** pour les employés sans avancement depuis > 3 ans"
+                    reponse = f"Coût estimé pour les {n_critique} critiques : **{cout:,} €** (base 6 mois de salaire). ROI d'une action préventive à 20% du coût : **400%**."
+                elif any(x in q for x in ["action", "recommand", "priorité"]):
+                    reponse = "**3 actions prioritaires :**\n1.  Entretiens sous 48h pour les critiques\n2.  Réduire les heures supplémentaires\n3.  Programme de promotions accéléré"
                 else:
-                    reponse = f"Bonjour ! Je suis votre assistant RH Analytics. Notre base contient {n} employés avec un taux d'attrition de {taux:.1f}%. Actuellement {n_risque} employés sont à risque. Posez-moi une question précise sur vos données RH !"
+                    reponse = f"Je suis votre assistant RH. Base : **{n} employés**, attrition **{taux:.1f}%**, **{n_critique} critiques**. Posez une question précise !"
 
-        st.session_state.messages_genai.append({"role": "assistant", "content": reponse})
-       
-
-    # Bouton vider le chat
-    if st.session_state.messages_genai:
-        if st.button(" Vider la conversation", key="clear_chat"):
-            st.session_state.messages_genai = []
-            st.rerun()
+        # Sauvegarder la réponse
+        messages_actifs.append({"role": "assistant", "content": reponse})
+        st.session_state.conversations[st.session_state.conv_active] = messages_actifs
+        st.rerun()
