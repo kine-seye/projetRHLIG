@@ -357,8 +357,8 @@ with st.sidebar:
       <div style="font-size:40px;">👥</div>
       <div style="font-size:15px;font-weight:800;color:{TXC};">HR Analytics</div>
       <div style="font-size:11px;color:{T2C};margin-top:4px;line-height:1.6;">
-        Seye Kiné | Bindia Adeline Thiara<br>
-        <span style="color:{OC};font-weight:600;">M. Aidara</span> — UCAO 2025-2026
+        <br>
+        <span style="color:{OC};font-weight:600;"></span>
       </div>
     </div>
     <hr style="border-color:{BOC};margin:8px 0 12px;">
