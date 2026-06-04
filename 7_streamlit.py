@@ -1176,7 +1176,7 @@ Réponds en français, de façon professionnelle et concise."""
         col_inp, col_btn = st.columns([5, 1])
         with col_inp:
             user_input = st.text_input("",
-                placeholder="questions .......",
+                placeholder="Demande une question .......",
                 label_visibility="collapsed")
         with col_btn:
             envoyer = st.form_submit_button("Envoyer", use_container_width=True, type="primary")
