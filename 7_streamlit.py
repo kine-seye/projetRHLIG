@@ -1144,7 +1144,7 @@ elif nav == "Prédiction":
             m_travel= st.selectbox("Voyages", ["Non-Travel","Travel_Rarely","Travel_Frequently"])
  
         st.markdown("<br>", unsafe_allow_html=True)
-        pb = st.button("🔮 Analyser le risque de départ", use_container_width=True, type="primary")
+        pb = st.button(" Analyser le risque de départ", use_container_width=True, type="primary")
  
         if pb:
             ot_val = "Yes" if "Oui" in m_ot else "No"
