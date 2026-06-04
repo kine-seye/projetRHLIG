@@ -679,6 +679,8 @@ elif nav == "Exploration":
             zmid=taux, colorbar=dict(title="Taux %",tickfont=dict(color=TXC))))
         fig_wm.update_layout(**LAY,
             title=dict(text="Croisement : WLB × Statut Matrimonial",font=dict(size=14),x=0.5),
+            xaxis=dict(**ax(""), tickfont=dict(color=TXC)),
+            yaxis=dict(**ax(""), tickfont=dict(color=TXC)),
             height=400, margin=dict(t=55,b=60,l=130,r=40))
         st.plotly_chart(fig_wm, use_container_width=True)
 
