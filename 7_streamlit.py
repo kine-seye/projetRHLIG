@@ -632,56 +632,95 @@ elif nav == "Exploration":
         st.plotly_chart(fig, use_container_width=True)
  
     with t2:
-        # Graphique 1 : JobSatisfaction × OverTime — pleine largeur
+       # Graphique 1 : JobSatisfaction × OverTime
         piv   = df.groupby(["JobSatisfaction","OverTime"])["Attrition"].mean()*100
         piv_u = piv.unstack().reindex(["Low","Medium","High","Very High"]).round(1)
         y_labels = [f"Sat. : {traduire_nom(r)}" for r in piv_u.index]
         x_labels = [f"Heures Sup : {traduire_nom(c)}" for c in piv_u.columns]
+
         fig_hm = go.Figure(go.Heatmap(
-            z=piv_u.values, x=x_labels, y=y_labels,
+            z=piv_u.values,
+            x=x_labels,
+            y=y_labels,
             text=[[f"<b>{v:.1f}%</b>" for v in row] for row in piv_u.values],
-            texttemplate="%{text}", textfont=dict(size=16,color="white"),
+            texttemplate="%{text}",
+            textfont=dict(size=16, color="white"),
             colorscale=[[0,VC],[0.4,OC],[0.7,OGC],[1,RC]],
             zmid=taux, zmin=5, zmax=45,
-            colorbar=dict(title="Taux %",tickfont=dict(color=TXC))))
+            colorbar=dict(
+                title="Taux %",
+                tickfont=dict(color=TXC),
+                titlefont=dict(color=TXC))))
+
         fig_hm.update_layout(**LAY,
-            title=dict(text="Analyse Croisée : Satisfaction x Heures Supplémentaires",font=dict(size=14),x=0.5),
-            height=420, margin=dict(t=55,b=70,l=130,r=40))
+            title=dict(
+                text="Analyse Croisée : Satisfaction × Heures Supplémentaires",
+                font=dict(size=14, color=TXC), x=0.5),
+            xaxis=dict(**ax(""), tickfont=dict(color=TXC, size=12)),
+            yaxis=dict(**ax(""), tickfont=dict(color=TXC, size=12)),
+            height=420,
+            margin=dict(t=55, b=70, l=150, r=40))
         st.plotly_chart(fig_hm, use_container_width=True)
- 
-        # Graphique 2 : Département × OverTime — pleine largeur
+
+        # Graphique 2 : Département × OverTime
         ot_d = df.groupby(["Department","OverTime"])["Attrition"].mean()*100
         ot_d = ot_d.unstack().round(1)
+
         fig_od = go.Figure()
-        for ov,cv,nv in [("No",VC,"Sans H.Sup"),("Yes",RC,"Avec H.Sup")]:
+        for ov, cv, nv in [("No", VC, "Sans H.Sup"), ("Yes", RC, "Avec H.Sup")]:
             if ov in ot_d.columns:
-                fig_od.add_trace(go.Bar(name=nv, x=[traduire_nom(i) for i in ot_d.index], y=ot_d[ov].values,
-                    marker=dict(color=cv,line=dict(color=FOC,width=1.5)),
-                    text=[f"{v:.1f}%" for v in ot_d[ov].values], textposition="inside"))
-        fig_od.add_hline(y=taux, line_dash="dash", line_color=OC,
-            annotation_text=f"Moy. {taux:.1f}%", annotation_font=dict(color=OC))
+                fig_od.add_trace(go.Bar(
+                    name=nv,
+                    x=[traduire_nom(i) for i in ot_d.index],
+                    y=ot_d[ov].values,
+                    marker=dict(color=cv, line=dict(color=FOC, width=1.5)),
+                    text=[f"{v:.1f}%" for v in ot_d[ov].values],
+                    textposition="inside",
+                    textfont=dict(color=TXC)))
+
+        fig_od.add_hline(
+            y=taux, line_dash="dash", line_color=OC,
+            annotation_text=f"Moy. {taux:.1f}%",
+            annotation_font=dict(color=OC))
+
         fig_od.update_layout(**LAY,
-            title=dict(text="Croisement : Département × OverTime",font=dict(size=14),x=0.5),
-            yaxis=dict(**ax("Taux (%)"),range=[0,55]), xaxis=ax(),
-            height=400, margin=dict(t=55,b=60,l=55,r=20), barmode="group")
+            title=dict(
+                text="Croisement : Département × Heures Supplémentaires",
+                font=dict(size=14, color=TXC), x=0.5),
+            yaxis=dict(**ax("Taux (%)"), range=[0, 55], tickfont=dict(color=TXC)),
+            xaxis=dict(**ax(""), tickfont=dict(color=TXC)),
+            height=400,
+            margin=dict(t=55, b=60, l=55, r=20),
+            barmode="group")
         st.plotly_chart(fig_od, use_container_width=True)
- 
-        # Graphique 3 : WLB × Statut Matrimonial — pleine largeur
+
+        # Graphique 3 : WLB × Statut Matrimonial
         wm   = df.groupby(["WorkLifeBalance","MaritalStatus"])["Attrition"].mean()*100
         wm_u = wm.unstack().reindex(["Bad","Good","Better","Best"]).round(1)
+
         fig_wm = go.Figure(go.Heatmap(
-            z=wm_u.values, x=[traduire_nom(cx) for cx in wm_u.columns],
+            z=wm_u.values,
+            x=[traduire_nom(cx) for cx in wm_u.columns],
             y=[f"Équilibre : {traduire_nom(r)}" for r in wm_u.index],
             text=[[f"<b>{v:.1f}%</b>" for v in row] for row in wm_u.values],
-            texttemplate="%{text}", textfont=dict(size=16,color="white"),
+            texttemplate="%{text}",
+            textfont=dict(size=16, color="white"),
             colorscale=[[0,VC],[0.4,OC],[0.7,OGC],[1,RC]],
-            zmid=taux, colorbar=dict(title="Taux %",tickfont=dict(color=TXC))))
-        fig_wm.update_layout(**LAY,
-            title=dict(text="Croisement : WLB × Statut Matrimonial",font=dict(size=14),x=0.5),
-            height=400, margin=dict(t=55,b=60,l=130,r=40))
-        st.plotly_chart(fig_wm, use_container_width=True)
+            zmid=taux,
+            colorbar=dict(
+                title="Taux %",
+                tickfont=dict(color=TXC),
+                titlefont=dict(color=TXC))))
 
- 
+        fig_wm.update_layout(**LAY,
+            title=dict(
+                text="Croisement : Équilibre Vie Pro/Perso × Statut Matrimonial",
+                font=dict(size=14, color=TXC), x=0.5),
+            xaxis=dict(**ax(""), tickfont=dict(color=TXC, size=12)),
+            yaxis=dict(**ax(""), tickfont=dict(color=TXC, size=12)),
+            height=400,
+            margin=dict(t=55, b=60, l=150, r=40))
+        st.plotly_chart(fig_wm, use_container_width=True)
  
     with t3:
         
