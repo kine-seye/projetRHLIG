@@ -647,7 +647,7 @@ elif nav == "Exploration":
         fig_hm.update_layout(**LAY,
             title=dict(text="Analyse Croisée : Satisfaction x Heures Supplémentaires",font=dict(size=14),x=0.5),
 
-            
+            xaxis=ax(""), yaxis=ax(""),
             height=420, margin=dict(t=55,b=70,l=130,r=40))
         st.plotly_chart(fig_hm, use_container_width=True)
  
@@ -680,8 +680,7 @@ elif nav == "Exploration":
             zmid=taux, colorbar=dict(title="Taux %",tickfont=dict(color=TXC))))
         fig_wm.update_layout(**LAY,
             title=dict(text="Croisement : WLB × Statut Matrimonial",font=dict(size=14),x=0.5),
-            xaxis=dict(**ax(""), tickfont=dict(color=TXC, size=12)),   # ← color=TXC
-            yaxis=dict(**ax(""), tickfont=dict(color=TXC, size=12)),
+            
             height=400, margin=dict(t=55,b=60,l=130,r=40))
         st.plotly_chart(fig_wm, use_container_width=True)
 
