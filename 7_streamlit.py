@@ -57,7 +57,7 @@ PC = "#9B72F5"; OGC = "#FF8C42"
 LAY = dict(
     paper_bgcolor=CAC,
     plot_bgcolor=GRC,
-    font=dict(color=TXC, family="Inter,sans-serif")
+    font=dict(color=TXC, family="Inter,sans-serif"),
     legend=dict(
         bgcolor=CAC,
         bordercolor=BOC,
