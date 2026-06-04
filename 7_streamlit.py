@@ -57,7 +57,13 @@ PC = "#9B72F5"; OGC = "#FF8C42"
 LAY = dict(
     paper_bgcolor=CAC,
     plot_bgcolor=GRC,
-    font=dict(color=TXC, family="Inter,sans-serif"))
+    font=dict(color=TXC, family="Inter,sans-serif")
+    legend=dict(
+        bgcolor=CAC,
+        bordercolor=BOC,
+        borderwidth=1,
+        font=dict(color=TXC)   # ← Ajouter cette ligne
+    ))
 
 def ax(t=""):
     return dict(
@@ -261,6 +267,66 @@ footer {{ visibility: hidden; }}
     border: 1px solid {BOC} !important;
     border-radius: 12px !important;
     color: {TXC} !important;
+}}
+
+
+/* ── MODE CLAIR — corrections spécifiques ─────────────────── */
+
+/* 1. Radio buttons — points et texte visibles */
+.stRadio > div {{
+    background-color: transparent !important;
+}}
+.stRadio label {{
+    color: {TXC} !important;
+}}
+[data-baseweb="radio"] div {{
+    border-color: {T2C} !important;
+}}
+
+/* 2. Boutons suggestions GenAI — fond visible */
+.stButton > button {{
+    background-color: {GRC} !important;
+    border: 1px solid {BOC} !important;
+    color: {TXC} !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+}}
+.stButton > button:hover {{
+    background-color: {BOC} !important;
+    border-color: {BC} !important;
+}}
+
+/* 3. Zone de saisie texte — fond et texte visibles */
+.stTextInput > div > div > input {{
+    background-color: {GRC} !important;
+    color: {TXC} !important;
+    border: 1px solid {BOC} !important;
+}}
+.stTextInput > div > div > input::placeholder {{
+    color: {T2C} !important;
+    opacity: 1 !important;
+}}
+
+/* 4. Légende Plotly visible en mode clair */
+.legend text {{
+    fill: {TXC} !important;
+}}
+.legendtext {{
+    fill: {TXC} !important;
+}}
+
+/* 5. Markdown texte général */
+.stMarkdown p,
+.stMarkdown li,
+.stMarkdown span {{
+    color: {TXC} !important;
+}}
+
+/* 6. Dataframe */
+.stDataFrame th,
+.stDataFrame td {{
+    color: {TXC} !important;
+    background-color: {CAC} !important;
 }}
 </style>
 """, unsafe_allow_html=True)
