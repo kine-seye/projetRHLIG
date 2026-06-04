@@ -546,8 +546,6 @@ if nav == "Accueil":
         showarrow=False, font=dict(size=22,color=RC))
     fig.update_layout(**LAY,
         title=dict(text="Répartition : Restés vs Partis",font=dict(size=14),x=0.5),
-        xaxis=dict(**ax(""), tickfont=dict(color=TXC)),
-        yaxis=dict(**ax(""), tickfont=dict(color=TXC)),
         height=350, margin=dict(t=50,b=10,l=10,r=10))
     st.plotly_chart(fig, use_container_width=True)
  
@@ -628,8 +626,8 @@ elif nav == "Exploration":
             annotation_text=f"Moy. {taux:.1f}%", annotation_font=dict(color=OC))
         fig.update_layout(**LAY,
             title=dict(text=f"Taux d'attrition par {traduire_nom(var)}",font=dict(size=14),x=0.5),
-            xaxis=dict(**ax("Taux (%)"),range=[0,65]),
-            yaxis=ax(), height=max(350, len(vals)*55),
+            xaxis=dict(**ax(""), tickfont=dict(color=TXC)),
+            yaxis=dict(**ax(""), tickfont=dict(color=TXC)),
             margin=dict(t=50,b=40,l=200,r=120))
         st.plotly_chart(fig, use_container_width=True)
  
