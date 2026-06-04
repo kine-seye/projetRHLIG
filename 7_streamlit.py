@@ -328,6 +328,21 @@ footer {{ visibility: hidden; }}
     color: {TXC} !important;
     background-color: {CAC} !important;
 }}
+
+/* Cacher la barre du haut Streamlit (Share, GitHub, etc.) */
+header[data-testid="stHeader"] {{
+    display: none !important;
+}}
+
+/* Ou si vous voulez juste la rendre transparente */
+header[data-testid="stHeader"] {{
+    background: transparent !important;
+    height: 0 !important;
+}}
+
+.block-container {{
+    padding-top: 1rem !important;
+}}
 </style>
 """, unsafe_allow_html=True)
 
