@@ -1124,15 +1124,7 @@ elif nav == "GenAI":
     n_risque   = int((df["Probabilite"] >= seuil).sum()) if MODELE_OK else 0
     dept_max   = df.groupby("Department")["Attrition"].mean().idxmax() if MODELE_OK else "N/A"
 
-    CONTEXTE_RH = f"""Tu es un expert en Ressources Humaines et People Analytics.
-Tu as accès aux données RH suivantes :
-- Dataset : {n} employés au total
-- Taux d'attrition observé : {taux:.1f}%
-- Employés à risque (score >= seuil) : {n_risque}
-- Employés critiques (risque >= 70%) : {n_critique}
-- Département le plus à risque : {dept_max}
-- Modèle : XGBoost | F1={F1:.4f} | AUC={AUC:.4f} | Seuil={seuil:.2f}
-Réponds en français, de façon professionnelle et concise."""
+
 
     # Initialiser l'historique du chat
     if "messages_genai" not in st.session_state:
@@ -1176,7 +1168,7 @@ Réponds en français, de façon professionnelle et concise."""
         col_inp, col_btn = st.columns([5, 1])
         with col_inp:
             user_input = st.text_input("",
-                placeholder="",
+                placeholder="Demande une question ......",
                 label_visibility="collapsed")
         with col_btn:
             envoyer = st.form_submit_button("Envoyer", use_container_width=True, type="primary")
