@@ -664,7 +664,7 @@ elif nav == "Exploration":
             annotation_text=f"Moy. {taux:.1f}%", annotation_font=dict(color=OC))
         fig_od.update_layout(**LAY,
             title=dict(text="Croisement : Département × OverTime",font=dict(size=14),x=0.5),
-            yaxis=dict(**ax("Taux (%)"),range=[0,55]), xaxis=ax(),
+            yaxis=dict(**ax("Taux (%)"), range=[0,55]), xaxis=ax(""),
             height=400, margin=dict(t=55,b=60,l=55,r=20), barmode="group")
         st.plotly_chart(fig_od, use_container_width=True)
  
