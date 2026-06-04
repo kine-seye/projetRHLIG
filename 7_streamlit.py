@@ -648,8 +648,7 @@ elif nav == "Exploration":
             title=dict(text="Analyse Croisée : Satisfaction x Heures Supplémentaires",font=dict(size=14),x=0.5),
             xaxis=dict(**ax(""), tickfont=dict(color=TXC)),
             yaxis=dict(**ax(""), tickfont=dict(color=TXC)),
-            
-            height=420, margin=dict(t=55,b=70,l=130,r=40))
+            height=420, margin=dict(t=55,b=70,l=150,r=40))
         st.plotly_chart(fig_hm, use_container_width=True)
  
         # Graphique 2 : Département × OverTime — pleine largeur
