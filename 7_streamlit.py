@@ -1265,15 +1265,13 @@ elif nav == "Prédiction":
                     st.warning(f"SHAP : {e}")
 
 
-# =============================================================================
-# PAGE GENAI — CHAT RH INTELLIGENT ET MODERNE
-# =============================================================================
+
 # =============================================================================
 # PAGE GENAI — CHAT RH AVEC HISTORIQUE MULTIPLE CONVERSATIONS
 # =============================================================================
 elif nav == "GenAI":
 
-    st.markdown(f'<div class="pg"><div class="pt">🤖 Assistant RH — GenAI</div><div class="ps">Posez vos questions RH — Propulsé par Mistral AI</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="pg"><div class="pt"> Assistant RH — GenAI</div><div class="ps">Posez vos questions RH — Propulsé par Mistral AI</div></div>', unsafe_allow_html=True)
 
     # ── Données RH pour le contexte ──────────────────────────────────────────
     n_critique = int((df["Niveau"] == "Critique").sum())
@@ -1290,7 +1288,7 @@ Réponds en français, de façon professionnelle et concise."""
     if "conversations" not in st.session_state:
         st.session_state.conversations = {
             "Conversation 1": [
-                {"role": "assistant", "content": f"Bonjour ! 👋 Je suis votre **Assistant RH**. J'ai analysé les données de vos **{n:,} employés** — **{n_critique} sont en niveau critique**. Comment puis-je vous aider ?"}
+                {"role": "assistant", "content": f"Bonjour !  Je suis votre Assistant RH. "}
             ]
         }
     if "conv_active" not in st.session_state:
@@ -1301,14 +1299,14 @@ Réponds en français, de façon professionnelle et concise."""
     # ── SIDEBAR CONVERSATIONS ────────────────────────────────────────────────
     with st.sidebar:
         st.markdown(f'<hr style="border-color:{BOC};margin:10px 0;">', unsafe_allow_html=True)
-        st.markdown(f'<div style="font-size:11px;font-weight:700;color:{T2C};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">💬 Conversations</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size:11px;font-weight:700;color:{T2C};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"> Conversations</div>', unsafe_allow_html=True)
 
         # Bouton nouvelle conversation
-        if st.button("✏️ Nouvelle conversation", use_container_width=True, key="new_conv"):
+        if st.button(" Nouvelle conversation", use_container_width=True, key="new_conv"):
             st.session_state.conv_counter += 1
             new_name = f"Conversation {st.session_state.conv_counter}"
             st.session_state.conversations[new_name] = [
-                {"role": "assistant", "content": f"Bonjour ! 👋 Nouvelle conversation démarrée. Comment puis-je vous aider ?"}
+                {"role": "assistant", "content": f"Bonjour !  Nouvelle conversation démarrée. Comment puis-je vous aider ?"}
             ]
             st.session_state.conv_active = new_name
             st.rerun()
@@ -1329,14 +1327,14 @@ Réponds en français, de façon professionnelle et concise."""
             col_conv, col_del = st.columns([5, 1])
             with col_conv:
                 if st.button(
-                    f"{'🔵' if is_active else '⚪'} {titre_conv}",
+                    f"{'' if is_active else ''} {titre_conv}",
                     key=f"conv_{nom_conv}",
                     use_container_width=True):
                     st.session_state.conv_active = nom_conv
                     st.rerun()
             with col_del:
                 if len(st.session_state.conversations) > 1:
-                    if st.button("🗑️", key=f"del_{nom_conv}"):
+                    if st.button("", key=f"del_{nom_conv}"):
                         del st.session_state.conversations[nom_conv]
                         # Sélectionner la première conversation restante
                         st.session_state.conv_active = list(st.session_state.conversations.keys())[0]
@@ -1346,11 +1344,11 @@ Réponds en français, de façon professionnelle et concise."""
     messages_actifs = st.session_state.conversations[st.session_state.conv_active]
 
     # Titre de la conversation active
-    st.markdown(f'<div style="font-size:12px;font-weight:600;color:{T2C};margin-bottom:12px;">📂 {st.session_state.conv_active}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div style="font-size:12px;font-weight:600;color:{T2C};margin-bottom:12px;"> {st.session_state.conv_active}</div>', unsafe_allow_html=True)
 
     # ── Suggestions de questions ──────────────────────────────────────────────
     if len([m for m in messages_actifs if m["role"] == "user"]) == 0:
-        st.markdown(f'<div style="font-size:12px;color:{T2C};margin-bottom:8px;">💡 Exemples de questions :</div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="font-size:12px;color:{T2C};margin-bottom:8px;"> Exemples de questions :</div>', unsafe_allow_html=True)
         questions = [
             "Combien d'employés sont à risque critique ?",
             "Quel département est le plus à risque ?",
