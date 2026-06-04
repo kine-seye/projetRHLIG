@@ -1327,6 +1327,15 @@ Réponds en français, de façon professionnelle et concise."""
               padding:12px 16px;max-width:75%;font-size:13px;color:{TXC};">{msg["content"]}</div>
             </div>""", unsafe_allow_html=True)
 
+
+    # 2. Historique AVANT le formulaire
+    for msg in st.session_state.messages_genai:
+        if msg["role"] == "user":
+            st.markdown(f'<div style="...justify-content:flex-end...">{msg["content"]}</div>', unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div style="...justify-content:flex-start...">{msg["content"]}</div>', unsafe_allow_html=True)
+
+
     # Zone de saisie
     with st.form("chat_form", clear_on_submit=True):
         col_inp, col_btn = st.columns([5, 1])
@@ -1382,7 +1391,7 @@ Réponds en français, de façon professionnelle et concise."""
                     reponse = f"Bonjour ! Je suis votre assistant RH Analytics. Notre base contient {n} employés avec un taux d'attrition de {taux:.1f}%. Actuellement {n_risque} employés sont à risque. Posez-moi une question précise sur vos données RH !"
 
         st.session_state.messages_genai.append({"role": "assistant", "content": reponse})
-        st.rerun()
+       
 
     # Bouton vider le chat
     if st.session_state.messages_genai:
