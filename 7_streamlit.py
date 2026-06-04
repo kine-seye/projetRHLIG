@@ -23,40 +23,37 @@ st.set_page_config(
 # ── LISTE DES PAGES (simplifiée — demande M. Aidara) ─────────────────────────
 PAGES = ["Accueil", "Exploration", "Prédiction", "GenAI"]
 
-# ── INITIALISATION DU THÈME (une seule fois) ──────────────────────────────────
+# =============================================================================
+# THEME — MODE SOMBRE / CLAIR
+# =============================================================================
+
+# ── Initialisation unique du thème ────────────────────────────────────────────
 if "mode_sombre" not in st.session_state:
     st.session_state.mode_sombre = True
 
-if "page_actuelle" not in st.session_state:
-    st.session_state.page_actuelle = "Accueil"
+# ── Toggle DANS la sidebar AVANT tout le reste ────────────────────────────────
+# C'est la clé : on lit la valeur du toggle EN PREMIER
+# pour que les couleurs soient correctes dès le premier clic
+with st.sidebar:
+    nouveau_mode = st.toggle(
+        "🌓 Mode Sombre",
+        value=st.session_state.mode_sombre,
+        key="toggle_theme")
+    st.session_state.mode_sombre = nouveau_mode
 
-# ── PALETTE FIXE (accents, états — ne changent pas selon le thème) ────────────
-VC  = "#00C896"   # Vert   — Stable / Faible
-RC  = "#FF4B6E"   # Rouge  — Critique / Parti
-BC  = "#4A9EF5"   # Bleu   — Info / Neutre
-OC  = "#FFD166"   # Or     — Seuil / Modéré
-PC  = "#9B72F5"   # Violet — SHAP / GenAI
-OGC = "#FF8C42"   # Orange — Élevé
-
-# ── COULEURS DYNAMIQUES SELON LE THÈME ───────────────────────────────────────
+# ── Couleurs définies APRÈS lecture du toggle ─────────────────────────────────
 if st.session_state.mode_sombre:
-    FOC = "#0F1923"   # Fond global
-    CAC = "#1A2535"   # Cartes / Sidebar
-    GRC = "#243044"   # Sous-blocs / Graphiques
-    TXC = "#E8F0FE"   # Texte principal
-    T2C = "#8FA3BF"   # Texte secondaire
-    BOC = "#3A4F6A"   # Bordures
-    GIC = "#2A3A50"   # Grille graphiques
+    FOC = "#0F1923"; CAC = "#1A2535"; GRC = "#243044"
+    TXC = "#E8F0FE"; T2C = "#8FA3BF"; BOC = "#3A4F6A"; GIC = "#2A3A50"
 else:
-    FOC = "#F8FAFC"
-    CAC = "#FFFFFF"
-    GRC = "#F1F5F9"
-    TXC = "#0F172A"   # Bleu-noir très sombre
-    T2C = "#475569"   # Gris foncé
-    BOC = "#CBD5E0"
-    GIC = "#E2E8F0"
+    FOC = "#F8FAFC"; CAC = "#FFFFFF"; GRC = "#F1F5F9"
+    TXC = "#0F172A"; T2C = "#475569"; BOC = "#CBD5E0"; GIC = "#E2E8F0"
 
-# ── PARAMÈTRES PLOTLY ─────────────────────────────────────────────────────
+# ── Couleurs fixes (accents — ne changent jamais) ─────────────────────────────
+VC = "#00C896"; RC = "#FF4B6E"; BC = "#4A9EF5"; OC = "#FFD166"
+PC = "#9B72F5"; OGC = "#FF8C42"
+
+# ── Paramètres Plotly ─────────────────────────────────────────────────────────
 LAY = dict(
     paper_bgcolor=CAC,
     plot_bgcolor=GRC,
@@ -70,7 +67,7 @@ def ax(t=""):
         zeroline=False,
         tickfont=dict(color=T2C))
 
-# ── CSS GLOBAL ────────────────────────────────────────────────────────────────
+# ── CSS Global — appliqué avec les bonnes couleurs du thème ───────────────────
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
@@ -84,17 +81,48 @@ st.markdown(f"""
 }}
 
 /* Fond global */
-.stApp {{ background-color: {FOC}; }}
+.stApp {{
+    background-color: {FOC} !important;
+    color: {TXC} !important;
+}}
+
+/* Header */
+header[data-testid="stHeader"] {{
+    background-color: {FOC} !important;
+}}
 
 /* Sidebar */
 section[data-testid="stSidebar"] {{
     background-color: {CAC} !important;
-    border-right: 1px solid {BOC};
+    border-right: 1px solid {BOC} !important;
+}}
+
+/* Tous les textes de la sidebar */
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] div {{
+    color: {TXC} !important;
+}}
+
+/* Radio buttons — noms des pages */
+.stRadio label span,
+[data-testid="stRadioLabel"] p,
+.stRadio [data-baseweb="radio"] label {{
+    color: {TXC} !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}}
+
+/* Toggle switch label */
+.stToggle label p,
+.stToggle span {{
+    color: {TXC} !important;
 }}
 
 /* Onglets */
 .stTabs [data-baseweb="tab-list"] {{
-    background-color: {CAC};
+    background-color: {CAC} !important;
     border-radius: 10px;
     padding: 4px;
     border: 1px solid {BOC};
@@ -103,27 +131,49 @@ section[data-testid="stSidebar"] {{
 .stTabs [aria-selected="true"] {{ background-color: {GRC} !important; color: {TXC} !important; }}
 
 /* Selectbox / Inputs */
-.stSelectbox>div>div,
-.stTextInput>div>div,
-.stMultiSelect>div>div {{
+.stSelectbox > div > div,
+.stTextInput > div > div,
+.stMultiSelect > div > div {{
     background-color: {GRC} !important;
     border: 1px solid {BOC} !important;
     border-radius: 8px !important;
+    color: {TXC} !important;
 }}
 div[data-baseweb="select"] div,
 .stSelectbox span,
-input {{ color: {TXC} !important; }}
+input {{
+    color: {TXC} !important;
+    background-color: {GRC} !important;
+}}
+
+/* Dropdown liste déroulante */
+ul[data-baseweb="menu"],
+li[data-baseweb="menu-item"] {{
+    background-color: {CAC} !important;
+    color: {TXC} !important;
+}}
+
+/* Flèches SVG */
 svg {{ fill: {T2C} !important; }}
 
-/* Labels */
+/* Labels au-dessus des widgets */
 div[data-testid="stWidgetLabel"] p {{
     color: {TXC} !important;
     font-weight: 600 !important;
     font-size: 13px !important;
 }}
 
+/* Paragraphes et textes généraux */
+p, span, div, li {{
+    color: {TXC};
+}}
+
+/* Titres */
+h1, h2, h3, h4, h5, h6 {{ color: {TXC} !important; }}
+footer {{ visibility: hidden; }}
+
 /* Bouton primaire */
-.stButton>button[kind="primary"] {{
+.stButton > button[kind="primary"] {{
     background: linear-gradient(135deg, {BC}, {PC}) !important;
     border: none !important;
     color: white !important;
@@ -132,11 +182,20 @@ div[data-testid="stWidgetLabel"] p {{
     padding: 10px 20px !important;
 }}
 
-/* Titres */
-h1, h2, h3, h4 {{ color: {TXC} !important; }}
-footer {{ visibility: hidden; }}
+/* Bouton secondaire */
+.stButton > button {{
+    background-color: {GRC} !important;
+    border: 1px solid {BOC} !important;
+    color: {TXC} !important;
+    border-radius: 8px !important;
+}}
 
-/* Composants cartes */
+/* Tableaux dataframe */
+.stDataFrame {{
+    background-color: {CAC} !important;
+}}
+
+/* ── Composants cartes HTML ───────────────────────────────────────────── */
 .pg {{
     background: {CAC};
     border: 1px solid {BOC};
@@ -191,10 +250,39 @@ footer {{ visibility: hidden; }}
     background-color: {CAC} !important;
     border: 1px solid {BOC} !important;
     border-radius: 12px !important;
+    color: {TXC} !important;
 }}
 </style>
 """, unsafe_allow_html=True)
 
+# =============================================================================
+# SIDEBAR — Suite (logo + navigation)
+# Le toggle est déjà ajouté ci-dessus, on continue ici avec le reste
+# =============================================================================
+with st.sidebar:
+    st.markdown(f"""
+    <div style="text-align:center;padding:10px 0 8px;">
+      <div style="font-size:40px;">👥</div>
+      <div style="font-size:15px;font-weight:800;color:{TXC};">HR Analytics</div>
+      <div style="font-size:11px;color:{T2C};margin-top:4px;line-height:1.6;">
+        Seye Kiné | Bindia Adeline Thiara<br>
+        <span style="color:{OC};font-weight:600;">M. Aidara</span> — UCAO 2025-2026
+      </div>
+    </div>
+    <hr style="border-color:{BOC};margin:8px 0 12px;">
+    """, unsafe_allow_html=True)
+
+    # Navigation
+    PAGES = ["Accueil", "Exploration", "Prédiction", "GenAI"]
+    if "page_actuelle" not in st.session_state:
+        st.session_state.page_actuelle = "Accueil"
+    try:
+        idx_p = PAGES.index(st.session_state.page_actuelle)
+    except ValueError:
+        idx_p = 0
+
+    nav = st.radio("Navigation", PAGES, index=idx_p, label_visibility="collapsed")
+    st.session_state.page_actuelle = nav
 # ── TRADUCTION VARIABLES TECHNIQUES ──────────────────────────────────────────
 TRADUCTION_RH = {
     "OverTime": "Heures Supplémentaires",
