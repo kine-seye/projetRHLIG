@@ -419,33 +419,7 @@ def get_explainer(model_to_explain, background_data):
         st.sidebar.warning(f"SHAP : {str(e)[:80]}")
         return None
 
-# ── SIDEBAR ───────────────────────────────────────────────────────────────────
-with st.sidebar:
-    # Toggle mode sombre/clair
-    st.session_state.mode_sombre = st.toggle(
-        "🌓 Mode Sombre",
-        value=st.session_state.mode_sombre)
 
-    st.markdown(f"""
-    <div style="text-align:center;padding:12px 0 8px;">
-      <div style="font-size:40px;">👥</div>
-      <div style="font-size:15px;font-weight:800;color:{TXC};">HR Analytics</div>
-      <div style="font-size:11px;color:{T2C};margin-top:4px;line-height:1.6;">
-        Seye Kiné | Bindia Adeline Thiara<br>
-        <span style="color:{OC};font-weight:600;">M. Aidara</span> — UCAO 2025-2026
-      </div>
-    </div>
-    <hr style="border-color:{BOC};margin:8px 0 12px;">
-    """, unsafe_allow_html=True)
-
-    # Navigation
-    try:
-        idx_p = PAGES.index(st.session_state.page_actuelle)
-    except ValueError:
-        idx_p = 0
-
-    nav = st.radio("Menu", PAGES, index=idx_p, label_visibility="collapsed")
-    st.session_state.page_actuelle = nav
 
 
  
