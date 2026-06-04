@@ -75,8 +75,8 @@ st.markdown(f"""
 
 /* Correction espace blanc en haut */
 .block-container {{
-    padding-top: 0.5rem !important;
-    margin-top: -2.5rem !important;
+    padding-top: 1rem !important;
+    max-width: 100% !important;
     padding-bottom: 2rem !important;
 }}
 
@@ -85,7 +85,17 @@ st.markdown(f"""
     background-color: {FOC} !important;
     color: {TXC} !important;
 }}
+/* Supprime l'espace du header Streamlit */
+header[data-testid="stHeader"] {{
+    height: 0rem !important;
+    min-height: 0rem !important;
+}}
 
+/* Supprime la barre de défilement horizontale */
+.main .block-container {{
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+}}
 /* Header */
 header[data-testid="stHeader"] {{
     background-color: {FOC} !important;
