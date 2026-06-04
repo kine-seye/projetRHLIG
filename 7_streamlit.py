@@ -647,9 +647,7 @@ elif nav == "Exploration":
         fig_hm.update_layout(**LAY,
             title=dict(text="Analyse Croisée : Satisfaction x Heures Supplémentaires",font=dict(size=14),x=0.5),
 
-            xaxis=dict(**ax(""), tickfont=dict(color=TXC, size=12)),   # ← color=TXC
-            yaxis=dict(**ax(""), tickfont=dict(color=TXC, size=12)),
-                             
+            
             height=420, margin=dict(t=55,b=70,l=130,r=40))
         st.plotly_chart(fig_hm, use_container_width=True)
  
