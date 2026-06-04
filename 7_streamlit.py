@@ -1125,14 +1125,14 @@ elif nav == "GenAI":
     dept_max   = df.groupby("Department")["Attrition"].mean().idxmax() if MODELE_OK else "N/A"
 
         CONTEXTE_RH = f"""Tu es un expert en Ressources Humaines et People Analytics.
-Tu as accès aux données RH suivantes :
-- Dataset : {n} employés au total
-- Taux d'attrition observé : {taux:.1f}%
-- Employés à risque (score >= seuil) : {n_risque}
-- Employés critiques (risque >= 70%) : {n_critique}
-- Département le plus à risque : {dept_max}
-- Modèle : XGBoost | F1={F1:.4f} | AUC={AUC:.4f} | Seuil={seuil:.2f}
-Réponds en français, de façon professionnelle et concise."""
+        Tu as accès aux données RH suivantes :
+        - Dataset : {n} employés au total
+        - Taux d'attrition observé : {taux:.1f}%
+        - Employés à risque (score >= seuil) : {n_risque}
+        - Employés critiques (risque >= 70%) : {n_critique}
+        - Département le plus à risque : {dept_max}
+        - Modèle : XGBoost | F1={F1:.4f} | AUC={AUC:.4f} | Seuil={seuil:.2f}
+        Réponds en français, de façon professionnelle et concise."""
 
     # Initialiser l'historique du chat
     if "messages_genai" not in st.session_state:
