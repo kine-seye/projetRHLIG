@@ -626,8 +626,8 @@ elif nav == "Exploration":
             annotation_text=f"Moy. {taux:.1f}%", annotation_font=dict(color=OC))
         fig.update_layout(**LAY,
             title=dict(text=f"Taux d'attrition par {traduire_nom(var)}",font=dict(size=14),x=0.5),
-            xaxis=dict(**ax(""), tickfont=dict(color=TXC)),
-            yaxis=dict(**ax(""), tickfont=dict(color=TXC)),
+            xaxis=dict(**ax("Taux (%)"),range=[0,65]),
+            yaxis=ax(), height=max(350, len(vals)*55),
             margin=dict(t=50,b=40,l=200,r=120))
         st.plotly_chart(fig, use_container_width=True)
  
@@ -646,6 +646,9 @@ elif nav == "Exploration":
             colorbar=dict(title="Taux %",tickfont=dict(color=TXC))))
         fig_hm.update_layout(**LAY,
             title=dict(text="Analyse Croisée : Satisfaction x Heures Supplémentaires",font=dict(size=14),x=0.5),
+
+            xaxis=dict(**ax(""), tickfont=dict(color=TXC, size=12)),   # ← color=TXC
+            yaxis=dict(**ax(""), tickfont=dict(color=TXC, size=12)),
                              
             height=420, margin=dict(t=55,b=70,l=130,r=40))
         st.plotly_chart(fig_hm, use_container_width=True)
