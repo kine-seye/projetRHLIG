@@ -1113,7 +1113,7 @@ elif nav == "Prédiction":
 # PAGE GENAI — CHAT RH INTELLIGENT ET MODERNE
 # =============================================================================
 elif nav == "GenAI":
-    st.markdown(f'<div class="pg"><div class="pt">🤖 Assistant RH — GenAI</div><div class="ps">Posez vos questions RH — Propulsé par Mistral/Llama</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="pg"><div class="pt"> Assistant RH — GenAI</div><div class="ps">Posez vos questions RH — Propulsé par Mistral/Llama</div></div>', unsafe_allow_html=True)
 
     if not MODELE_OK:
         st.error("Modèle non disponible.")
@@ -1124,7 +1124,15 @@ elif nav == "GenAI":
     n_risque   = int((df["Probabilite"] >= seuil).sum()) if MODELE_OK else 0
     dept_max   = df.groupby("Department")["Attrition"].mean().idxmax() if MODELE_OK else "N/A"
 
-
+        CONTEXTE_RH = f"""Tu es un expert en Ressources Humaines et People Analytics.
+Tu as accès aux données RH suivantes :
+- Dataset : {n} employés au total
+- Taux d'attrition observé : {taux:.1f}%
+- Employés à risque (score >= seuil) : {n_risque}
+- Employés critiques (risque >= 70%) : {n_critique}
+- Département le plus à risque : {dept_max}
+- Modèle : XGBoost | F1={F1:.4f} | AUC={AUC:.4f} | Seuil={seuil:.2f}
+Réponds en français, de façon professionnelle et concise."""
 
     # Initialiser l'historique du chat
     if "messages_genai" not in st.session_state:
