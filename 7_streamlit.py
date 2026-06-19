@@ -1132,7 +1132,7 @@ elif nav == "Prédiction":
             st.markdown(f'<div style="font-size:11px;font-weight:700;color:{BC};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"> Carrière</div>', unsafe_allow_html=True)
             m_dept  = st.selectbox("Département", sorted(df["Department"].unique()))
             m_role  = st.selectbox("Poste", sorted(df["JobRole"].unique()))
-            m_jlev  = st.selectbox("Niveau poste", ["Entry Level","Junior Level","Mid Level","Senior Level","Executive Level"])
+            m_jlev  = st.selectbox("Niveau poste", ["Stagiaire / Entrée", "Junior", "Intermédiaire", "Confirmé", "Direction"])
             m_genre = st.radio("Genre", ["Male","Female"], horizontal=True)
             m_marit = st.selectbox("Statut matrimonial", ["Divorced","Married","Single"])
         with r3:
