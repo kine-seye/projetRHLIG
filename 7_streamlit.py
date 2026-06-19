@@ -1123,10 +1123,11 @@ elif nav == "Prédiction":
         r1,r2,r3 = st.columns(3, gap="large")
         with r1:
             st.markdown(f'<div style="font-size:11px;font-weight:700;color:{BC};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"> Bien-être</div>', unsafe_allow_html=True)
-            m_js   = st.select_slider("Satisfaction travail", options=["Low","Medium","High","Very High"], value="High")
-            m_wlb  = st.select_slider("Équilibre WLB", options=["Bad","Good","Better","Best"], value="Good")
-            m_ot   = st.radio("Heures supplémentaires", [" Non"," Oui"], horizontal=True)
-            m_env  = st.select_slider("Satisfaction environnement", options=["Low","Medium","High","Very High"], value="High")
+            # Dans la colonne r1 (Bien-être)
+            m_js = st.select_slider("Satisfaction travail", options=["Faible", "Moyen", "Élevé", "Très Élevé"], value="Élevé")
+            m_wlb = st.select_slider("Équilibre Vie Pro/Perso", options=["Mauvais", "Bon", "Très Bon", "Excellent"], value="Bon")
+            m_ot = st.radio("Heures supplémentaires", ["Non", "Oui"], horizontal=True)
+            m_env = st.select_slider("Satisfaction environnement", options=["Faible", "Moyen", "Élevé", "Très Élevé"], value="Élevé")
         with r2:
             st.markdown(f'<div style="font-size:11px;font-weight:700;color:{BC};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"> Carrière</div>', unsafe_allow_html=True)
             m_dept  = st.selectbox("Département", sorted(df["Department"].unique()))
