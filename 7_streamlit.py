@@ -1149,18 +1149,22 @@ elif nav == "Prédiction":
  
         if pb:
             ot_val = "Yes" if "Oui" in m_ot else "No"
+            d_sat = {"Faible":"Low", "Moyen":"Medium", "Élevé":"High", "Très Élevé":"Very High"}
+            d_wlb = {"Mauvais":"Bad", "Bon":"Good", "Très Bon":"Better", "Excellent":"Best"}
+            d_mar = {"Célibataire":"Single", "Marié":"Married", "Divorcé":"Divorced"}
+            d_trav = {"Aucun":"Non-Travel", "Rarement":"Travel_Rarely", "Fréquemment":"Travel_Frequently"}
             df_in  = pd.DataFrame([{
                 "Age":m_age,"DailyRate":800,"DistanceFromHome":m_dist,"HourlyRate":60,
                 "MonthlyIncome":m_inc,"MonthlyRate":15000,"NumCompaniesWorked":2,
                 "PercentSalaryHike":12,"StockOptionLevel":0,"TotalWorkingYears":m_anc+3,
                 "TrainingTimesLastYear":2,"YearsAtCompany":m_anc,
                 "YearsInCurrentRole":max(0,m_anc-2),"YearsSinceLastPromotion":m_promo,
-                "YearsWithCurrManager":2,"BusinessTravel":m_travel,"Department":m_dept,
+                "YearsWithCurrManager":2,"BusinessTravel": d_trav[m_travel],"Department":m_dept,
                 "Education":"Bachelor","EducationField":"Marketing",
-                "EnvironmentSatisfaction":m_env,"Gender":m_genre,"JobInvolvement":"High",
-                "JobLevel":m_jlev,"JobRole":m_role,"JobSatisfaction":m_js,
-                "MaritalStatus":m_marit,"OverTime":ot_val,"PerformanceRating":"Excellent",
-                "RelationshipSatisfaction":"High","WorkLifeBalance":m_wlb,
+                "EnvironmentSatisfaction": d_sat[m_env],"Gender": "Male" if m_genre == "Homme" else "Female","JobInvolvement":"High",
+                "JobLevel":m_jlev,"JobRole":m_role,"JobSatisfaction": d_sat[m_js],
+                "MaritalStatus": d_mar[m_marit],"OverTime": "Yes" if m_ot == "Oui" else "No","PerformanceRating":"Excellent",
+                "RelationshipSatisfaction":"High","WorkLifeBalance": d_wlb[m_wlb],
             }])
             X_m    = preprocesseur.transform(df_in[FEATURES])
             proba_m= float(modele.predict_proba(X_m)[0][1])
