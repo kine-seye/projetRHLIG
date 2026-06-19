@@ -1157,6 +1157,7 @@ elif nav == "Prédiction":
             d_wlb = {"Mauvais":"Bad", "Bon":"Good", "Très Bon":"Better", "Excellent":"Best"}
             d_mar = {"Célibataire":"Single", "Marié":"Married", "Divorcé":"Divorced"}
             d_trav = {"Aucun":"Non-Travel", "Rarement":"Travel_Rarely", "Fréquemment":"Travel_Frequently"}
+            d_lev = {"Stagiaire / Entrée": 1, "Junior": 2, "Intermédiaire": 3, "Confirmé": 4, "Direction": 5}
             df_in  = pd.DataFrame([{
                 "Age":m_age,"DailyRate":800,"DistanceFromHome":m_dist,"HourlyRate":60,
                 "MonthlyIncome":m_inc,"MonthlyRate":15000,"NumCompaniesWorked":2,
