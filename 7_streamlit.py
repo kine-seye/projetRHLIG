@@ -1142,7 +1142,7 @@ elif nav == "Prédiction":
             m_inc   = st.number_input("Salaire mensuel", 1000, 20000, 5000, step=500)
             m_promo = st.number_input("Ans sans promotion", 0, 15, 2)
             m_dist  = st.slider("Distance domicile (km)", 1, 30, 10)
-            m_travel= st.selectbox("Voyages", ["Non-Travel","Travel_Rarely","Travel_Frequently"])
+            m_travel = st.selectbox("Voyages pro.", ["Aucun", "Rarement", "Fréquemment"])
  
         st.markdown("<br>", unsafe_allow_html=True)
         pb = st.button(" Analyser le risque de départ", use_container_width=True, type="primary")
