@@ -1167,7 +1167,7 @@ elif nav == "Prédiction":
                 "YearsWithCurrManager":2,"BusinessTravel": d_trav[m_travel],"Department":m_dept,
                 "Education":"Bachelor","EducationField":"Marketing",
                 "EnvironmentSatisfaction": d_sat[m_env],"Gender": "Male" if m_genre == "Homme" else "Female","JobInvolvement":"High",
-                "JobLevel": d_lev[m_jlev],"JobRole":m_role,"JobSatisfaction": d_sat[m_js],
+                "JobLevel":d_lev[m_jlev],"JobRole":m_role,"JobSatisfaction": d_sat[m_js],
                 "MaritalStatus": d_mar[m_marit],"OverTime": "Yes" if m_ot == "Oui" else "No","PerformanceRating":"Excellent",
                 "RelationshipSatisfaction":"High","WorkLifeBalance": d_wlb[m_wlb],
             }])
