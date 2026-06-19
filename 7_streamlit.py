@@ -377,42 +377,46 @@ with st.sidebar:
     st.session_state.page_actuelle = nav
 # ── TRADUCTION VARIABLES TECHNIQUES ──────────────────────────────────────────
 TRADUCTION_RH = {
+    # --- Titres des colonnes ---
     "OverTime": "Heures Supplémentaires",
     "MonthlyIncome": "Salaire Mensuel",
-    "Age": "Âge de l'employé",
+    "Age": "Âge",
     "DistanceFromHome": "Distance Domicile-Travail",
     "JobSatisfaction": "Satisfaction au Travail",
-    "EnvironmentSatisfaction": "Satisfaction Environnementale",
-    "RelationshipSatisfaction": "Satisfaction Relationnelle",
-    "JobInvolvement": "Implication au Travail",
     "WorkLifeBalance": "Équilibre Vie Pro/Perso",
-    "YearsAtCompany": "Ancienneté dans l'entreprise",
-    "YearsInCurrentRole": "Années dans le poste actuel",
-    "YearsSinceLastPromotion": "Années depuis la promotion",
-    "YearsWithCurrManager": "Années avec le manager",
-    "DailyRate": "Tarif Journalier",
-    "NumCompaniesWorked": "Nombre d'entreprises passées",
-    "PercentSalaryHike": "Augmentation de salaire (%)",
-    "BusinessTravel": "Déplacements Pro.",
+    "YearsAtCompany": "Ancienneté",
     "JobLevel": "Niveau de responsabilité",
-    "StockOptionLevel": "Niveau d'actions (Stock Options)",
-    "TrainingTimesLastYear": "Nombre de formations (An dernier)",
-    "JobRole": "Poste occupé",
-    "Department": "Département",
-    "Single": "Célibataire",
-    "Married": "Marié",
-    "Divorced": "Divorcé",
-    "Frequently": "Fréquents",
-    "Rarely": "Rares",
-    "Non-Travel": "Aucun",
+    
+    # --- DÉPARTEMENTS ---
+    "Sales": "Ventes",
+    "Research & Development": "Recherche & Développement",
+    "Human Resources": "Ressources Humaines",
+    
+    # --- POSTES (Job Roles) ---
+    "Sales Executive": "Responsable des Ventes",
+    "Research Scientist": "Chercheur Scientifique",
+    "Laboratory Technician": "Technicien de Laboratoire",
+    "Manufacturing Director": "Directeur de Fabrication",
+    "Healthcare Representative": "Représentant Santé",
+    "Manager": "Manager / Gestionnaire",
+    "Sales Representative": "Commercial / Vendeur",
+    "Research Director": "Directeur de Recherche",
+    "Human Resources": "Ressources Humaines",
+
+    # --- OPTIONS ---
+    "Yes": "Oui",
+    "No": "Non",
     "Low": "Faible",
     "Medium": "Moyen",
     "High": "Élevé",
     "Very High": "Très Élevé",
-    "Yes": "Oui",
-    "No": "Non"
+    "Travel_Rarely": "Rarement",
+    "Travel_Frequently": "Fréquemment",
+    "Non-Travel": "Aucun Voyage",
+    "Single": "Célibataire",
+    "Married": "Marié",
+    "Divorced": "Divorcé"
 }
-
 def traduire_nom(nom_tech):
     nom_clair = str(nom_tech)
     for en, fr in TRADUCTION_RH.items():
