@@ -417,6 +417,7 @@ TRADUCTION_RH = {
     "Married": "Marié",
     "Divorced": "Divorcé"
 }
+
 def traduire_nom(nom_tech):
     nom_clair = str(nom_tech)
     for en, fr in TRADUCTION_RH.items():
@@ -1157,7 +1158,6 @@ elif nav == "Prédiction":
             d_wlb = {"Mauvais":"Bad", "Bon":"Good", "Très Bon":"Better", "Excellent":"Best"}
             d_mar = {"Célibataire":"Single", "Marié":"Married", "Divorcé":"Divorced"}
             d_trav = {"Aucun":"Non-Travel", "Rarement":"Travel_Rarely", "Fréquemment":"Travel_Frequently"}
-            d_lev = {"Stagiaire / Entrée": 1, "Junior": 2, "Intermédiaire": 3, "Confirmé": 4, "Direction": 5}
             df_in  = pd.DataFrame([{
                 "Age":m_age,"DailyRate":800,"DistanceFromHome":m_dist,"HourlyRate":60,
                 "MonthlyIncome":m_inc,"MonthlyRate":15000,"NumCompaniesWorked":2,
@@ -1167,9 +1167,9 @@ elif nav == "Prédiction":
                 "YearsWithCurrManager":2,"BusinessTravel": d_trav[m_travel],"Department":m_dept,
                 "Education":"Bachelor","EducationField":"Marketing",
                 "EnvironmentSatisfaction": d_sat[m_env],"Gender": "Male" if m_genre == "Homme" else "Female","JobInvolvement":"High",
-                "JobLevel": int(d_lev[m_jlev]),"JobRole":m_role,"JobSatisfaction": d_sat[m_js],
+                "JobLevel":m_jlev,"JobRole":m_role,"JobSatisfaction": d_sat[m_js],
                 "MaritalStatus": d_mar[m_marit],"OverTime": "Yes" if m_ot == "Oui" else "No","PerformanceRating":"Excellent",
-                "RelationshipSatisfaction":"High","WorkLifeBalance": d_wlb[m_wlb],
+                "RelationshipSatisfaction":"High", "WorkLifeBalance": d_wlb[m_wlb],
             }])
             X_m    = preprocesseur.transform(df_in[FEATURES])
             proba_m= float(modele.predict_proba(X_m)[0][1])
