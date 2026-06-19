@@ -1130,11 +1130,11 @@ elif nav == "Prédiction":
             m_env = st.select_slider("Satisfaction environnement", options=["Faible", "Moyen", "Élevé", "Très Élevé"], value="Élevé")
         with r2:
             st.markdown(f'<div style="font-size:11px;font-weight:700;color:{BC};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"> Carrière</div>', unsafe_allow_html=True)
-            m_dept  = st.selectbox("Département", sorted(df["Department"].unique()))
-            m_role  = st.selectbox("Poste", sorted(df["JobRole"].unique()))
+            m_dept = st.selectbox("Département", sorted(df["Department"].unique()), format_func=traduire_nom)
+            m_role = st.selectbox("Poste", sorted(df["JobRole"].unique()), format_func=traduire_nom)
             m_jlev  = st.selectbox("Niveau poste", ["Stagiaire / Entrée", "Junior", "Intermédiaire", "Confirmé", "Direction"])
-            m_genre = st.radio("Genre", ["Male","Female"], horizontal=True)
-            m_marit = st.selectbox("Statut matrimonial", ["Divorced","Married","Single"])
+            m_genre = st.radio("Genre", ["Homme", "Femme"], horizontal=True)
+            m_marit = st.selectbox("Statut matrimonial", ["Célibataire", "Marié", "Divorcé"])
         with r3:
             st.markdown(f'<div style="font-size:11px;font-weight:700;color:{BC};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"> Informations</div>', unsafe_allow_html=True)
             m_age   = st.number_input("Âge", 18, 60, 35)
